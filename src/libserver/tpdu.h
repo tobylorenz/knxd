@@ -29,6 +29,7 @@
 
 #include <memory>
 
+#include "common.h"
 #include "npdu.h"
 
 /** enumaration of TPDU types */
@@ -68,14 +69,30 @@ public:
   virtual ~TPDU () = default;
 
   virtual bool init (const CArray & c, TracePtr tr) = 0;
-  /** convert to character array */
+
+  /**
+   * convert to character array
+   *
+   * @return Octet 6 to N
+   */
   virtual CArray ToPacket () const = 0;
+
   /** decode content as string */
   virtual std::string Decode (TracePtr tr) const = 0;
+
   /** gets TPDU type */
   virtual TPDU_Type getType () const = 0;
-  /** converts character array to a TPDU */
-  static TPDUPtr fromPacket (const EIB_AddrType address_type, const eibaddr_t destination_address, const CArray & c, TracePtr tr);
+
+  /**
+   * converts character array to a TPDU
+   *
+   * @param[in] address_type Address Type (AT) from Octet 5
+   * @param[in] destination_address Destination Address
+   * @param[in] o6 Octet 6 to N
+   * @oaram[in] tr Trace pointer
+   * @return TPDU
+   */
+  static TPDUPtr fromPacket (const EIB_AddrType address_type, const eibaddr_t destination_address, const CArray & o6, TracePtr tr);
 };
 
 class T_Unknown_PDU:public TPDU
@@ -97,7 +114,7 @@ public:
 class T_Data_Broadcast_PDU:public TPDU
 {
 public:
-  CArray tsdu;
+  CArray tsdu; // Octet 6 to N
 
   T_Data_Broadcast_PDU () = default;
   virtual bool init (const CArray & c, TracePtr tr) override;
@@ -113,7 +130,7 @@ public:
 class T_Data_SystemBroadcast_PDU:public TPDU
 {
 public:
-  CArray tsdu;
+  CArray tsdu; // Octet 6 to N
 
   T_Data_SystemBroadcast_PDU () = default;
   virtual bool init (const CArray & c, TracePtr tr) override;
@@ -129,7 +146,7 @@ public:
 class T_Data_Group_PDU:public TPDU
 {
 public:
-  CArray tsdu;
+  CArray tsdu; // Octet 6 to N
 
   T_Data_Group_PDU () = default;
   virtual bool init (const CArray & c, TracePtr tr) override;
@@ -145,7 +162,7 @@ public:
 class T_Data_Tag_Group_PDU:public TPDU
 {
 public:
-  CArray tsdu;
+  CArray tsdu; // Octet 6 to N
 
   T_Data_Tag_Group_PDU () = default;
   virtual bool init (const CArray & c, TracePtr tr) override;
@@ -161,7 +178,7 @@ public:
 class T_Data_Individual_PDU:public TPDU
 {
 public:
-  CArray tsdu;
+  CArray tsdu; // Octet 6 to N
 
   T_Data_Individual_PDU () = default;
   virtual bool init (const CArray & c, TracePtr tr) override;
@@ -178,7 +195,7 @@ class T_Data_Connected_PDU:public TPDU
 {
 public:
   uint8_t sequence_number = 0;
-  CArray tsdu;
+  CArray tsdu; // Octet 6 to N
 
   T_Data_Connected_PDU () = default;
   virtual bool init (const CArray & c, TracePtr tr) override;

@@ -122,15 +122,29 @@ public:
   virtual ~APDU () = default;
 
   virtual bool init (const CArray &, TracePtr tr) = 0;
-  /** convert to character array */
+
+  /**
+   * convert to character array
+   *
+   * @return Octet 6 to N
+   */
   virtual CArray ToPacket () const = 0;
+
   /** decode content as string */
   virtual std::string Decode (TracePtr tr) const = 0;
 
-  /** converts character array to a APDU */
-  static APDUPtr fromPacket (const CArray &, TracePtr tr);
+  /**
+   * converts character array to a APDU
+   *
+   * @param[in] o6 Octet 6 to N
+   * @oaram[in] tr Trace pointer
+   * @return APDU
+   */
+  static APDUPtr fromPacket (const CArray & o6, TracePtr tr);
+
   /** gets APDU type */
   virtual APDU_type getType () const = 0;
+
   /** returns true, if this is can be an answer of req */
   virtual bool isResponse (const APDU * req) const = 0;
 };

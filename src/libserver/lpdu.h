@@ -31,22 +31,6 @@
 
 #include "trace.h"
 
-/** Message Priority */
-enum EIB_Priority : uint8_t
-{
-  PRIO_SYSTEM = 0,
-  PRIO_URGENT = 1,
-  PRIO_NORMAL = 2,
-  PRIO_LOW = 3
-};
-
-/** Address Type */
-enum EIB_AddrType : uint8_t
-{
-  IndividualAddress = 0,
-  GroupAddress = 1
-};
-
 /** enumeration of Layer 2 frame types */
 enum LPDU_Type
 {
@@ -66,6 +50,22 @@ enum LPDU_Type
   L_Service_Information,
   /** L_Management */
   L_Management,
+};
+
+/** Message Priority */
+enum EIB_Priority : uint8_t
+{
+  PRIO_SYSTEM = 0,
+  PRIO_URGENT = 1,
+  PRIO_NORMAL = 2,
+  PRIO_LOW = 3
+};
+
+/** Address Type */
+enum EIB_AddrType : uint8_t
+{
+  IndividualAddress = 0,
+  GroupAddress = 1
 };
 
 /** represents a Layer 2 frame */
@@ -103,7 +103,7 @@ public:
   /* source address */
   eibaddr_t source_address = 0;
   /** payload of Layer 4 (LSDU) */
-  CArray lsdu;
+  CArray lsdu; // Octet 6 to N
   /* status */
   uint8_t l_status = 0;
 
@@ -113,7 +113,7 @@ public:
   bool valid_checksum = true;
   /** length ok */
   bool valid_length = true;
-  uint8_t hop_count = 0x06;
+  uint8_t hop_count = 0x06; // @todo belongs to NPDU
 
   L_Data_PDU () = default;
 
@@ -146,7 +146,7 @@ public:
   /* source address */
   eibaddr_t source_address = 0;
   /** payload of Layer 4 (LSDU) */
-  CArray lsdu;
+  CArray lsdu; // Octet 6 to N
   /* status */
   uint8_t l_status = 0;
 

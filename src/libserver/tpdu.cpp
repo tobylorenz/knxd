@@ -22,47 +22,46 @@
 #include "apdu.h"
 
 TPDUPtr
-TPDU::fromPacket (const EIB_AddrType address_type, const eibaddr_t destination_address, const CArray & c, TracePtr tr)
+TPDU::fromPacket (const EIB_AddrType address_type, const eibaddr_t destination_address, const CArray & o6, TracePtr tr)
 {
   TPDUPtr t;
-  if (c.size() >= 1)
+  if (o6.size() >= 1)
     {
       if (address_type == GroupAddress)
         {
-          if ((c[0] & 0xFC) == 0x00)
+          if ((o6[0] & 0xFC) == 0x00)
             {
               if (destination_address == 0)
                 t = TPDUPtr(new T_Data_Broadcast_PDU ()); // @todo T_Data_SystemBroadcast
               else
                 t = TPDUPtr(new T_Data_Group_PDU ());
             }
-          else if ((c[0] & 0xFC) == 0x04)
+          else if ((o6[0] & 0xFC) == 0x04)
             t = TPDUPtr(new T_Data_Tag_Group_PDU ());
         }
       else
         {
-          if ((c[0] & 0xFC) == 0x00)
+          if ((o6[0] & 0xFC) == 0x00)
             t = TPDUPtr(new T_Data_Individual_PDU ());
-          else if ((c[0] & 0xC0) == 0x40)
+          else if ((o6[0] & 0xC0) == 0x40)
             t = TPDUPtr(new T_Data_Connected_PDU ());
-          else if (c[0] == 0x80)
+          else if (o6[0] == 0x80)
             t = TPDUPtr(new T_Connect_PDU ());
-          else if (c[0] == 0x81)
+          else if (o6[0] == 0x81)
             t = TPDUPtr(new T_Disconnect_PDU ());
-          else if ((c[0] & 0xC3) == 0xC2)
+          else if ((o6[0] & 0xC3) == 0xC2)
             t = TPDUPtr(new T_ACK_PDU ());
-          else if ((c[0] & 0xC3) == 0xC3)
+          else if ((o6[0] & 0xC3) == 0xC3)
             t = TPDUPtr(new T_NAK_PDU ());
         }
     }
-  if (t && t->init (c, tr))
+  if (t && t->init (o6, tr))
     return t;
 
   t = TPDUPtr(new T_Unknown_PDU ());
-  t->init (c, tr);
+  t->init (o6, tr);
   return t;
 }
-
 
 /* T_Unknown */
 
@@ -347,7 +346,7 @@ std::string T_ACK_PDU::Decode (TracePtr) const
   return s;
 }
 
-/* T_NAK  */
+/* T_NAK */
 
 bool T_NAK_PDU::init (const CArray & c, TracePtr)
 {

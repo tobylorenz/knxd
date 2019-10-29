@@ -29,6 +29,7 @@
 
 #include <memory>
 
+#include "common.h"
 #include "lpdu.h"
 
 /** enumeration of Layer 3 frame types */
@@ -59,14 +60,28 @@ public:
   virtual ~NPDU () = default;
 
   virtual bool init (const CArray & c) = 0;
-  /** convert to a character array */
+
+  /**
+   * convert to a character array
+   *
+   * @return Octet 6 to N
+   */
   virtual CArray ToPacket () const = 0;
+
   /** decode content as string */
   virtual std::string Decode (TracePtr tr) const = 0;
+
   /** get frame type */
   virtual NPDU_Type getType () const = 0;
-  /** converts a character array to a Layer 3 frame */
-  static NPDUPtr fromPacket (const CArray & c, TracePtr tr);
+
+  /**
+   * converts a character array to a Layer 3 frame
+   *
+   * @param[in] o6 Octet 6 to N
+   * @oaram[in] tr Trace pointer
+   * @return NPDU
+   */
+  static NPDUPtr fromPacket (const CArray & o6, TracePtr tr);
 };
 
 /** N_Data_Individual */

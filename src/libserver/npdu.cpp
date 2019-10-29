@@ -19,7 +19,7 @@
 
 #include "npdu.h"
 
-NPDUPtr NPDU::fromPacket (const CArray & c, TracePtr tr)
+NPDUPtr NPDU::fromPacket (const CArray & o6, TracePtr tr)
 {
 }
 

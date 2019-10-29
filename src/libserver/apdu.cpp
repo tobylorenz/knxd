@@ -23,7 +23,7 @@
 #include <cstring>
 
 APDUPtr
-APDU::fromPacket (const CArray & c, TracePtr tr)
+APDU::fromPacket (const CArray & o6, TracePtr tr)
 {
   /* @todo provide additional parameter or split function to differentiate:
    * - multicast
@@ -33,9 +33,9 @@ APDU::fromPacket (const CArray & c, TracePtr tr)
    * - p2p connection-oriented
    */
   APDUPtr a;
-  if (c.size() >= 2)
+  if (o6.size() >= 2)
     {
-      uint16_t apci = ((c[0] & 0x03) << 8) | c[1];
+      uint16_t apci = ((o6[0] & 0x03) << 8) | o6[1];
       switch (apci)
         {
         case A_GroupValue_Read:
@@ -251,10 +251,10 @@ APDU::fromPacket (const CArray & c, TracePtr tr)
           break;
         }
     }
-  if (a && a->init (c, tr))
+  if (a && a->init (o6, tr))
     return a;
   a = APDUPtr(new A_Unknown_PDU);
-  a->init (c, tr);
+  a->init (o6, tr);
   return a;
 }
 
