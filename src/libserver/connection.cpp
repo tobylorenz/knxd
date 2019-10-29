@@ -274,8 +274,8 @@ A_TPDU::recv_Data(uint8_t *buf, size_t len)
     }
   con->t->TracePacket (7, "recv TPDU", len - 4, buf + 4);
   TpduComm p;
-  p.data = CArray (buf + 4, len - 4);
   p.addr = (buf[2] << 8) | (buf[3]);
+  p.lsdu = CArray (buf + 4, len - 4);
   c->recv_Data (p);
 }
 
@@ -313,8 +313,8 @@ A_GroupSocket::recv_Data(uint8_t *buf, size_t len)
     }
   con->t->TracePacket (7, "recv GroupSock", len - 4, buf + 4);
   GroupAPDU p;
-  p.data = CArray (buf + 4, len - 4);
-  p.dst = (buf[2] << 8) | (buf[3]);
+  p.tsdu = CArray (buf + 4, len - 4);
+  p.destination_address = (buf[2] << 8) | (buf[3]);
   c->recv_Data (p);
 }
 
@@ -322,12 +322,12 @@ void
 A_Broadcast::send (BroadcastComm &e)
 {
   CArray res;
-  res.resize (4 + e.data.size());
+  res.resize (4 + e.tsdu.size());
   EIBSETTYPE (res, EIB_APDU_PACKET);
-  res[2] = (e.src >> 8) & 0xff;
-  res[3] = (e.src) & 0xff;
-  res.setpart (e.data.data(), 4, e.data.size());
-  con->t->TracePacket (7, "Recv", e.data);
+  res[2] = (e.source_address >> 8) & 0xff;
+  res[3] = (e.source_address) & 0xff;
+  res.setpart (e.tsdu.data(), 4, e.tsdu.size());
+  con->t->TracePacket (7, "Recv", e.tsdu);
   con->sendmessage (res.size(), res.data());
 }
 
@@ -335,12 +335,12 @@ void
 A_Group::send (GroupComm &e)
 {
   CArray res;
-  res.resize (4 + e.data.size());
+  res.resize (4 + e.tsdu.size());
   EIBSETTYPE (res, EIB_APDU_PACKET);
-  res[2] = (e.src >> 8) & 0xff;
-  res[3] = (e.src) & 0xff;
-  res.setpart (e.data.data(), 4, e.data.size());
-  con->t->TracePacket (7, "Recv", e.data);
+  res[2] = (e.source_address >> 8) & 0xff;
+  res[3] = (e.source_address) & 0xff;
+  res.setpart (e.tsdu.data(), 4, e.tsdu.size());
+  con->t->TracePacket (7, "Recv", e.tsdu);
   con->sendmessage (res.size(), res.data());
 }
 
@@ -348,12 +348,12 @@ void
 A_TPDU::send (TpduComm &e)
 {
   CArray res;
-  res.resize (4 + e.data.size());
+  res.resize (4 + e.lsdu.size());
   EIBSETTYPE (res, EIB_APDU_PACKET);
   res[2] = (e.addr >> 8) & 0xff;
   res[3] = (e.addr) & 0xff;
-  res.setpart (e.data.data(), 4, e.data.size());
-  con->t->TracePacket (7, "Recv", e.data);
+  res.setpart (e.lsdu.data(), 4, e.lsdu.size());
+  con->t->TracePacket (7, "Recv", e.lsdu);
   con->sendmessage (res.size(), res.data());
 }
 
@@ -383,14 +383,14 @@ void
 A_GroupSocket::send (GroupAPDU &e)
 {
   CArray res;
-  res.resize (6 + e.data.size());
+  res.resize (6 + e.tsdu.size());
   EIBSETTYPE (res, EIB_GROUP_PACKET);
-  res[2] = (e.src >> 8) & 0xff;
-  res[3] = (e.src) & 0xff;
-  res[4] = (e.dst >> 8) & 0xff;
-  res[5] = (e.dst) & 0xff;
-  res.setpart (e.data.data(), 6, e.data.size());
-  con->t->TracePacket (7, "Recv", e.data);
+  res[2] = (e.source_address >> 8) & 0xff;
+  res[3] = (e.source_address) & 0xff;
+  res[4] = (e.destination_address >> 8) & 0xff;
+  res[5] = (e.destination_address) & 0xff;
+  res.setpart (e.tsdu.data(), 6, e.tsdu.size());
+  con->t->TracePacket (7, "Recv", e.tsdu);
   con->sendmessage (res.size(), res.data());
 }
 
