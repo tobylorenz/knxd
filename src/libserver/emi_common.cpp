@@ -57,7 +57,7 @@ EMI_Common::setup()
 {
   if (iface == nullptr)
     return false;
-  if(!LowLevelFilter::setup())
+  if (!LowLevelFilter::setup())
     return false;
   send_timeout = cfg->value("send-timeout",300) / 1000.;
   max_retries = cfg->value("send-retries",3);

@@ -19,114 +19,118 @@
 
 #include "npdu.h"
 
-NPDUPtr NPDU::fromPacket (const CArray & c, TracePtr tr)
+NPDUPtr
+NPDU::fromPacket (const EIB_AddrType address_type, const eibaddr_t destination_address, const CArray & o6, TracePtr tr)
 {
+  NPDUPtr npdu;
+  if (o6.size() >= 1)
+    {
+      if (address_type == GroupAddress)
+        {
+          if (destination_address == 0)
+            npdu = NPDUPtr(new N_Data_Broadcast_PDU ()); // @todo N_Data_SystemBroadcast
+          else
+            npdu = NPDUPtr(new N_Data_Group_PDU ());
+        }
+      else
+        npdu = NPDUPtr(new N_Data_Individual_PDU ());
+    }
+  if (npdu && npdu->init (o6, tr))
+    return npdu;
+
+  return nullptr;
 }
 
-/* N_Data_Individual */
+/* N_Data_Individual_PDU */
 
 bool
-N_Data_Individual_PDU::init (const CArray & c)
+N_Data_Individual_PDU::init (const CArray & o6, TracePtr tr)
 {
-  if (c.size() < 6)
-    return false;
-
-//  if (!lpdu.init (c))
-//    return false;
-  hop_count_type = (c[5] >> 4) & 0x07;
   return true;
 }
 
-CArray N_Data_Individual_PDU::ToPacket () const
+CArray
+N_Data_Individual_PDU::ToPacket () const
 {
-  CArray pdu;
-//  pdu = lpdu.ToPacket();
-  pdu[5] = (pdu[5] & 0x8f) | ((hop_count_type & 0x07) << 4);
-  return pdu;
+  CArray npdu;
+  return npdu;
 }
 
-std::string N_Data_Individual_PDU::Decode (TracePtr) const
+std::string
+N_Data_Individual_PDU::decode (TracePtr tr) const
 {
-  return "N_Data_Individual";
+  std::string s;
+  // @todo s = L_Data_PDU::decode(tr);
+  s = "N_Data_Individual";
+  return s;
 }
 
-/* N_Data_Group */
+/* N_Data_Group_PDU */
 
 bool
-N_Data_Group_PDU::init (const CArray & c)
+N_Data_Group_PDU::init (const CArray & o6, TracePtr tr)
 {
-  if (c.size() < 6)
-    return false;
-
-//  if (!lpdu.init (c))
-//    return false;
-  hop_count_type = (c[5] >> 4) & 0x07;
   return true;
 }
 
-CArray N_Data_Group_PDU::ToPacket () const
+CArray
+N_Data_Group_PDU::ToPacket () const
 {
-  CArray pdu;
-//  pdu = lpdu.ToPacket();
-  pdu[5] = (pdu[5] & 0x8f) | ((hop_count_type & 0x07) << 4);
-  return pdu;
+  CArray npdu;
+  return npdu;
 }
 
-std::string N_Data_Group_PDU::Decode (TracePtr) const
+std::string
+N_Data_Group_PDU::decode (TracePtr tr) const
 {
-  return "N_Data_Group";
+  std::string s;
+  // @todo s = L_Data_PDU::decode(tr);
+  s = "N_Data_Group";
+  return s;
 }
 
-/* N_Data_Broadcast */
+/* N_Data_Broadcast_PDU */
 
 bool
-N_Data_Broadcast_PDU::init (const CArray & c)
+N_Data_Broadcast_PDU::init (const CArray & o6, TracePtr tr)
 {
-  if (c.size() < 6)
-    return false;
-
-//  if (!lpdu.init (c))
-//    return false;
-  hop_count_type = (c[5] >> 4) & 0x07;
   return true;
 }
 
-CArray N_Data_Broadcast_PDU::ToPacket () const
+CArray
+N_Data_Broadcast_PDU::ToPacket () const
 {
-  CArray pdu;
-//  pdu = lpdu.ToPacket();
-  pdu[5] = (pdu[5] & 0x8f) | ((hop_count_type & 0x07) << 4);
-  return pdu;
+  CArray npdu;
+  return npdu;
 }
 
-std::string N_Data_Broadcast_PDU::Decode (TracePtr) const
+std::string
+N_Data_Broadcast_PDU::decode (TracePtr tr) const
 {
-  return "N_Data_Broadcast";
+  std::string s;
+  // @todo s = L_Data_PDU::decode(tr);
+  s = "N_Data_Broadcast";
+  return s;
 }
 
-/* N_Data_SystemBroadcast */
+/* N_Data_SystemBroadcast_PDU */
 
 bool
-N_Data_SystemBroadcast_PDU::init (const CArray & c)
+N_Data_SystemBroadcast_PDU::init (const CArray & o6, TracePtr tr)
 {
-  if (c.size() < 6)
-    return false;
-
-//  if (!lpdu.init (c))
-//    return false;
-  hop_count_type = (c[5] >> 4) & 0x07;
   return true;
 }
 
 CArray N_Data_SystemBroadcast_PDU::ToPacket () const
 {
-  CArray pdu;
-//  pdu = lpdu.ToPacket();
-  pdu[5] = (pdu[5] & 0x8f) | ((hop_count_type & 0x07) << 4);
-  return pdu;
+  CArray npdu;
+  return npdu;
 }
 
-std::string N_Data_SystemBroadcast_PDU::Decode (TracePtr) const
+std::string N_Data_SystemBroadcast_PDU::decode (TracePtr tr) const
 {
-  return "N_Data_SystemBroadcast";
+  std::string s;
+  s = L_SystemBroadcast_PDU::decode(tr);
+  s += " N_Data_SystemBroadcast";
+  return s;
 }

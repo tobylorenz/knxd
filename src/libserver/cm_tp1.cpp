@@ -38,7 +38,8 @@ LDataPtr CM_TP1_to_L_Data (const CArray & c, TracePtr)
       l->source_address = (c[1] << 8) | (c[2]);
       l->destination_address = (c[3] << 8) | (c[4]);
       l->address_type = (c[5] & 0x80) ? GroupAddress : IndividualAddress;
-      l->hop_count = (c[5] >> 4) & 0x07; // @todo this is NPDU
+      l->lsdu_ctrl = c[5] & 0x70;
+      l->hop_count_type = l->lsdu_ctrl >> 4;
       uint8_t len = (c[5] & 0x0f) + 1;
       if (len + 7 != c.size())
         return nullptr;
@@ -52,7 +53,8 @@ LDataPtr CM_TP1_to_L_Data (const CArray & c, TracePtr)
       if (c.size() < 7)
         return nullptr;
       l->address_type = (c[1] & 0x80) ? GroupAddress : IndividualAddress;
-      l->hop_count = (c[1] >> 4) & 0x07; // @todo this is NPDU
+      l->lsdu_ctrl = c[1] & 0x70;
+      l->hop_count_type = l->lsdu_ctrl >> 4;
       l->source_address = (c[2] << 8) | (c[3]);
       l->destination_address = (c[4] << 8) | (c[5]);
       uint8_t len = c[6] + 1;
@@ -84,7 +86,7 @@ CArray L_Data_to_CM_TP1 (const LDataPtr & p)
 {
   assert (p->lsdu.size() >= 1);
   assert (p->lsdu.size() <= 0xff);
-  assert ((p->hop_count & 0xf8) == 0);
+  assert ((p->hop_count_type & 0xf8) == 0);
 
   CArray pdu;
   uint8_t len = p->lsdu.size() - 1;
@@ -99,7 +101,7 @@ CArray L_Data_to_CM_TP1 (const LDataPtr & p)
       pdu[4] = p->destination_address & 0xff;
       pdu[5] =
         (p->address_type == GroupAddress ? 0x80 : 0x00) |
-        ((p->hop_count & 0x07) << 4) |
+        ((p->hop_count_type & 0x07) << 4) |
         (len & 0x0f);
       pdu.setpart (p->lsdu.data(), 6, 1 + (len & 0x0f));
     }
@@ -110,7 +112,7 @@ CArray L_Data_to_CM_TP1 (const LDataPtr & p)
       pdu[0] = 0x10 | (p->repeated ? 0x00 : 0x20) | (p->priority << 2);
       pdu[1] =
         (p->address_type == GroupAddress ? 0x80 : 0x00) |
-        ((p->hop_count & 0x07) << 4);
+        ((p->hop_count_type & 0x07) << 4);
       pdu[2] = p->source_address >> 8;
       pdu[3] = p->source_address & 0xff;
       pdu[4] = p->destination_address >> 8;

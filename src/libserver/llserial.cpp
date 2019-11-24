@@ -33,7 +33,7 @@
 
 static speed_t getbaud(int baud)
 {
-  switch(baud)
+  switch (baud)
     {
     case 9600:
       return B9600;
@@ -51,11 +51,11 @@ static speed_t getbaud(int baud)
 bool
 LLserial::setup()
 {
-  if(!FDdriver::setup())
+  if (!FDdriver::setup())
     return false;
 
   dev = cfg->value("device","");
-  if(dev.size() == 0)
+  if (dev.size() == 0)
     {
       ERRORPRINTF (t, E_ERROR | 22, "Missing device= config");
       return false;

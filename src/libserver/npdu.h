@@ -29,6 +29,7 @@
 
 #include <memory>
 
+#include "common.h"
 #include "lpdu.h"
 
 /** enumeration of Layer 3 frame types */
@@ -49,92 +50,103 @@ enum NPDU_Type
 class NPDU;
 using NPDUPtr = std::unique_ptr<NPDU>;
 
-/** NPDU */
+/** abstract NPDU base class */
 class NPDU
 {
 public:
-  uint8_t hop_count_type = 0x06;
-
   NPDU () = default;
   virtual ~NPDU () = default;
 
-  virtual bool init (const CArray & c) = 0;
-  /** convert to a character array */
+  virtual bool init (const CArray & o6, TracePtr tr) = 0;
+
+  /**
+   * convert to a character array
+   *
+   * @return Octet 6 to N
+   */
   virtual CArray ToPacket () const = 0;
+
   /** decode content as string */
-  virtual std::string Decode (TracePtr tr) const = 0;
+  virtual std::string decode (TracePtr tr) const = 0;
+
   /** get frame type */
-  virtual NPDU_Type getType () const = 0;
-  /** converts a character array to a Layer 3 frame */
-  static NPDUPtr fromPacket (const CArray & c, TracePtr tr);
+  virtual NPDU_Type getNType () const = 0;
+
+  /**
+   * converts a character array to a Layer 3 frame
+   *
+   * @param[in] o6 Octet 6 to N
+   * @oaram[in] tr Trace pointer
+   * @return NPDU
+   */
+  static NPDUPtr fromPacket (const EIB_AddrType address_type, const eibaddr_t destination_address, const CArray & o6, TracePtr tr);
+
+  // @todo uint8_t hop_count_type = 0x06; belongs here
+
+  /** NSDU (octet 6 to N) */
+  CArray nsdu {};
 };
 
-/** N_Data_Individual */
-class N_Data_Individual_PDU:public NPDU
+/** N_Data_Individual PDU */
+class N_Data_Individual_PDU:public NPDU, public L_Data_PDU
 {
 public:
-  L_Data_PDU * lpdu = nullptr;
-
   N_Data_Individual_PDU () = default;
 
-  virtual bool init (const CArray & c) override;
+  virtual std::string decode (TracePtr tr) const override;
+  virtual bool init (const CArray & o6, TracePtr tr) override;
   virtual CArray ToPacket () const override;
-  virtual std::string Decode (TracePtr tr) const override;
-  virtual NPDU_Type getType () const override
+  virtual NPDU_Type getNType () const override
   {
     return N_Data_Individual;
   }
 };
 
-/** N_Data_Group */
-class N_Data_Group_PDU:public NPDU
+/** N_Data_Group PDU */
+class N_Data_Group_PDU:public NPDU, public L_Data_PDU
 {
 public:
-  L_Data_PDU * lpdu = nullptr;
-
   N_Data_Group_PDU () = default;
 
-  virtual bool init (const CArray & c) override;
+  virtual std::string decode (TracePtr tr) const override;
+  virtual bool init (const CArray & o6, TracePtr tr) override;
   virtual CArray ToPacket () const override;
-  virtual std::string Decode (TracePtr tr) const override;
-  virtual NPDU_Type getType () const override
+  virtual NPDU_Type getNType () const override
   {
     return N_Data_Group;
   }
 };
 
-/** N_Data_Broadcast */
-class N_Data_Broadcast_PDU:public NPDU
+/** N_Data_Broadcast PDU */
+class N_Data_Broadcast_PDU:public NPDU, public L_Data_PDU
 {
 public:
-  L_Data_PDU * lpdu = nullptr;
-
   N_Data_Broadcast_PDU () = default;
 
-  virtual bool init (const CArray & c) override;
+  virtual std::string decode (TracePtr tr) const override;
+  virtual bool init (const CArray & o6, TracePtr tr) override;
   virtual CArray ToPacket () const override;
-  virtual std::string Decode (TracePtr tr) const override;
-  virtual NPDU_Type getType () const override
+  virtual NPDU_Type getNType () const override
   {
     return N_Data_Broadcast;
   }
 };
 
-/** N_Data_SystemBroadcast */
-class N_Data_SystemBroadcast_PDU:public NPDU
+/** N_Data_SystemBroadcast PDU */
+class N_Data_SystemBroadcast_PDU:public NPDU, public L_SystemBroadcast_PDU
 {
 public:
-  L_SystemBroadcast_PDU * lpdu = nullptr;
-
   N_Data_SystemBroadcast_PDU () = default;
 
-  virtual bool init (const CArray & c) override;
+  virtual std::string decode (TracePtr tr) const override;
+  virtual bool init (const CArray & o6, TracePtr tr) override;
   virtual CArray ToPacket () const override;
-  virtual std::string Decode (TracePtr tr) const override;
-  virtual NPDU_Type getType () const override
+  virtual NPDU_Type getNType () const override
   {
     return N_Data_SystemBroadcast;
   }
 };
 
 #endif
+
+/** @} */

@@ -34,7 +34,7 @@ NetServer::stop_()
 
   io.stop();
   cleanup.stop();
-  while(!cleanup_q.empty())
+  while (!cleanup_q.empty())
     cleanup_q.pop();
 
   ITER(i,connections)

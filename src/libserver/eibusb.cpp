@@ -222,7 +222,7 @@ USBDriver::sendLocal_done_cb(bool success)
   else if (wait_make)
     {
       wait_make = false;
-      if(!make_EMI())
+      if (!make_EMI())
         errored();
     }
   else if (version > vERROR && version < vRaw)
@@ -290,7 +290,7 @@ USBDriver::recv_Data(CArray& c)
       return;
     }
 
-  if(!make_EMI())
+  if (!make_EMI())
     {
       errored();
       return;
@@ -365,7 +365,7 @@ USBDriver::setup ()
     goto ex1;
 
   orig_iface = iface;
-  if(!make_EMI())
+  if (!make_EMI())
     goto ex1;
 
   if (iface == nullptr)

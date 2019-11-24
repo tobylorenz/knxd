@@ -244,7 +244,7 @@ public:
   }
   void send_L_Data(LDataPtr l)
   {
-    ERRORPRINTF (t, E_ERROR | 78, "packet not coded: %s", l->Decode(t));
+    ERRORPRINTF (t, E_ERROR | 78, "packet not coded: %s", l->decode(t));
   }
 
   /** sends a EMI frame asynchronous */

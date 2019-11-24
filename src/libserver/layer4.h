@@ -37,29 +37,30 @@ public:
   virtual void send(T &) = 0;
 };
 
-template<class COMM>
+template<class T>
 class Layer4common:public LineDriver
 {
 protected:
-  T_Reader<COMM> *app = nullptr;
+  T_Reader<T> *app = nullptr;
 
-  Layer4common(T_Reader<COMM> *app, LinkConnectClientPtr lc) : LineDriver(lc), app(app) {}
+  Layer4common(T_Reader<T> *app, LinkConnectClientPtr lc) : LineDriver(lc), app(app) {}
   virtual ~Layer4common() = default;
 };
 
-template<class COMM>
-class Layer4commonWO:public Layer4common<COMM>
+template<class T>
+class Layer4commonWO:public Layer4common<T>
 {
 public:
-  Layer4commonWO (T_Reader<COMM> *app, LinkConnectClientPtr lc, bool write_only) : Layer4common<COMM>(app,lc), write_only(write_only) {}
+  Layer4commonWO (T_Reader<T> *app, LinkConnectClientPtr lc, bool write_only) : Layer4common<T>(app,lc), write_only(write_only) {}
+
+  virtual bool checkGroupAddress(eibaddr_t) const
+  {
+    return !write_only;
+  }
 
   bool checkAddress(eibaddr_t addr) const
   {
     return !write_only && addr == this->getAddress();
-  }
-  virtual bool checkGroupAddress(eibaddr_t) const
-  {
-    return !write_only;
   }
 
 private:
@@ -71,12 +72,14 @@ private:
 /** informations about a group communication packet */
 struct GroupAPDU
 {
-  /** Layer 4 data */
-  CArray data;
   /** source address */
-  eibaddr_t src;
+  eibaddr_t source_address;
+
   /** destination address */
-  eibaddr_t dst;
+  eibaddr_t destination_address;
+
+  /** Layer 4 data */
+  CArray lsdu;
 };
 
 /** Group Communication socket */
@@ -86,8 +89,8 @@ public:
   GroupSocket (T_Reader<GroupAPDU> *app, LinkConnectClientPtr lc, bool write_only);
   virtual ~GroupSocket ();
 
-  /** enqueues a packet from L3 */
-  void send_L_Data (LDataPtr l);
+  virtual void send_L_Data (LDataPtr l) override;
+
   /** send APDU to L3 */
   void recv_Data (const GroupAPDU & c);
 };
@@ -97,32 +100,33 @@ using GroupSocketPtr = std::shared_ptr<GroupSocket>;
 /** informations about a group communication packet */
 struct GroupComm
 {
-  /** Layer 4 data */
-  CArray data;
   /** source address */
-  eibaddr_t src;
+  eibaddr_t source_address;
+
+  /** Layer 4 data */
+  CArray lsdu;
 };
 
 /** Group Layer 4 connection (Multicast) */
 class T_Group:public Layer4commonWO<GroupComm>
 {
 public:
-  T_Group (T_Reader<GroupComm> *app, LinkConnectClientPtr lc, eibaddr_t group, bool write_only);
+  T_Group (T_Reader<GroupComm> *app, LinkConnectClientPtr lc, eibaddr_t group_address, bool write_only);
   virtual ~T_Group ();
 
-  /** enqueues a packet from L3 */
-  void send_L_Data (LDataPtr l);
+  virtual void send_L_Data (LDataPtr l) override;
+
+  virtual bool checkGroupAddress(eibaddr_t group_address) const override
+  {
+    return (group_address == this->group_address);
+  }
+
   /** send APDU to L3 */
   void recv_Data (const CArray & c);
 
-  virtual bool checkGroupAddress(eibaddr_t addr) const override
-  {
-    return (addr == groupaddr);
-  }
-
 private:
   /** group address */
-  eibaddr_t groupaddr;
+  eibaddr_t group_address;
 };
 
 using T_GroupPtr = std::shared_ptr<T_Group>;
@@ -132,10 +136,11 @@ using T_GroupPtr = std::shared_ptr<T_Group>;
 /** information about a broadcast packet */
 struct BroadcastComm
 {
-  /** Layer 4 data */
-  CArray data;
   /** source address */
-  eibaddr_t src;
+  eibaddr_t source_address;
+
+  /** Layer 4 data */
+  CArray lsdu;
 };
 
 /** Broadcast Layer 4 connection (Broadcast) */
@@ -145,8 +150,8 @@ public:
   T_Broadcast (T_Reader<BroadcastComm> *app, LinkConnectClientPtr lc, bool write_only);
   virtual ~T_Broadcast ();
 
-  /** enqueues a packet */
-  void send_L_Data (LDataPtr l);
+  virtual void send_L_Data (LDataPtr l) override;
+
   /** send APDU c */
   void recv_Data (const CArray & c);
 };
@@ -163,17 +168,17 @@ using T_BroadcastPtr = std::shared_ptr<T_Broadcast>;
 class T_Individual:public Layer4commonWO<CArray>
 {
 public:
-  T_Individual (T_Reader<CArray> *app, LinkConnectClientPtr lc, eibaddr_t dest, bool write_only);
+  T_Individual (T_Reader<CArray> *app, LinkConnectClientPtr lc, eibaddr_t destination_address, bool write_only);
   virtual ~T_Individual ();
 
-  /** enqueues a packet from L3 */
-  void send_L_Data (LDataPtr l);
+  virtual void send_L_Data (LDataPtr l) override;
+
   /** send APDU to L3 */
   void recv_Data (const CArray & c);
 
 private:
   /** destination address */
-  eibaddr_t dest;
+  eibaddr_t destination_address;
 };
 
 using T_IndividualPtr = std::shared_ptr<T_Individual>;
@@ -184,11 +189,11 @@ using T_IndividualPtr = std::shared_ptr<T_Individual>;
 class T_Connection:public Layer4common<CArray>
 {
 public:
-  T_Connection (T_Reader<CArray> *app, LinkConnectClientPtr lc, eibaddr_t dest);
+  T_Connection (T_Reader<CArray> *app, LinkConnectClientPtr lc, eibaddr_t destination_address);
   virtual ~T_Connection ();
 
-  /** enqueues a packet from L3 */
-  void send_L_Data (LDataPtr l);
+  virtual void send_L_Data (LDataPtr l) override;
+
   /** send APDU to L3 */
   void recv_Data (const CArray & c);
 
@@ -213,7 +218,8 @@ private:
   int mode = 0;
   /** repeat count of the transmitting frame */
   int repcount;
-  eibaddr_t dest;
+  /** destination address */
+  eibaddr_t destination_address;
 
   /** sends T_Connect */
   void SendConnect ();
@@ -234,27 +240,28 @@ using T_ConnectionPtr = std::shared_ptr<T_Connection>;
 /** a raw layer 4 connection packet */
 struct TpduComm
 {
-  /** Layer 4 data */
-  CArray data;
   /** individual address of the remote device */
-  eibaddr_t addr;
+  eibaddr_t addr; // @todo source_address or destination_address?
+
+  /** Layer 4 data */
+  CArray lsdu;
 };
 
 /** Layer 4 raw individual connection */
 class T_TPDU:public Layer4common<TpduComm>
 {
 public:
-  T_TPDU (T_Reader<TpduComm> *app, LinkConnectClientPtr lc, eibaddr_t src);
+  T_TPDU (T_Reader<TpduComm> *app, LinkConnectClientPtr lc, eibaddr_t source_address);
   virtual ~T_TPDU ();
 
-  /** enqueues a packet from L3 */
-  void send_L_Data (LDataPtr l);
+  virtual void send_L_Data (LDataPtr l) override;
+
   /** send APDU to L3 */
   void recv_Data (const TpduComm & c);
 
 private:
   /** source address to use */
-  eibaddr_t src;
+  eibaddr_t source_address;
 };
 
 using T_TPDUPtr = std::shared_ptr<T_TPDU>;

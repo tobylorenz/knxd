@@ -247,19 +247,19 @@ Router::setup()
         // IniSectionPtr sd = ini[sd_name];
         (void) ini[sd_name]; // set the section's "referenced" bit, for error checking
         int num_fds = sd_listen_fds(0);
-        if( num_fds < 0 )
+        if ( num_fds < 0 )
           {
             ERRORPRINTF (t, E_ERROR | 85, "Error getting fds from systemd.");
             goto ex;
           }
 
         // zero FDs from systemd is not a bug
-        for( int fd = SD_LISTEN_FDS_START; fd < SD_LISTEN_FDS_START+num_fds; ++fd )
+        for ( int fd = SD_LISTEN_FDS_START; fd < SD_LISTEN_FDS_START+num_fds; ++fd )
           {
             IniSectionPtr sds = ini.add_auto(sd_name);
 
             (*sds)["use"] = sd_name;
-            if( sd_is_socket(fd, AF_UNSPEC, SOCK_STREAM, 1) <= 0 )
+            if ( sd_is_socket(fd, AF_UNSPEC, SOCK_STREAM, 1) <= 0 )
               {
                 ERRORPRINTF (t, E_ERROR | 86, "systemd socket %d is not a socket.", fd);
                 goto ex;
@@ -280,7 +280,7 @@ Router::setup()
   {
     size_t pos = 0;
     size_t comma = 0;
-    while(true)
+    while (true)
       {
         comma = x.find(',',pos);
         std::string name = x.substr(pos,comma-pos);
@@ -340,7 +340,7 @@ Router::do_driver(LinkConnectPtr &link, IniSectionPtr& s, const std::string& dri
   driver = DriverPtr(drivers.create(drivername, link, s));
   if (driver == nullptr)
     {
-      if(!quiet)
+      if (!quiet)
         ERRORPRINTF (t, E_ERROR | 89, "Driver '%s' not found.", drivername);
       link = nullptr;
       return false;
@@ -364,7 +364,7 @@ Router::do_server(ServerPtr &link, IniSectionPtr& s, const std::string& serverna
   link = ServerPtr(servers.create(servername, *this, s));
   if (link == nullptr)
     {
-      if(!quiet)
+      if (!quiet)
         ERRORPRINTF (t, E_ERROR | 90, "Server '%s' not found.", servername);
       return false;
     }
@@ -513,7 +513,7 @@ Router::state_trigger_cb (ev::async &, int)
         continue;
       }
 
-    switch(lcs)
+    switch (lcs)
       {
       case L_up_error:
       case L_going_down_error:
@@ -524,7 +524,7 @@ Router::state_trigger_cb (ev::async &, int)
       }
 
     lcs = ii->state;
-    switch(lcs)
+    switch (lcs)
       {
       case L_down:
       case L_error:
@@ -574,7 +574,7 @@ Router::state_trigger_cb (ev::async &, int)
       {
         auto ii = i->second;
         LConnState lcs = ii->state;
-        switch(lcs)
+        switch (lcs)
           {
           case L_down:
           case L_error:
@@ -629,7 +629,7 @@ Router::stop_()
 
   in_link_loop += 1;
   seq++;
-  while(seen)
+  while (seen)
     {
       links_changed = false;
       seen = false;
@@ -750,7 +750,7 @@ Router::recv_L_Data (LDataPtr l, LinkConnect& link)
       // check if from the correct interface
       if (&*l2x != &link)
         {
-          TRACEPRINTF (link.t, 3, "Packet not from %d:%s: %s", l2x->t->seq, l2x->t->name, l->Decode (t));
+          TRACEPRINTF (link.t, 3, "Packet not from %d:%s: %s", l2x->t->seq, l2x->t->name, l->decode (t));
           return;
         }
     }
@@ -783,7 +783,7 @@ Router::queue_L_Data (LDataPtr l)
         trigger.send();
     }
   else
-    TRACEPRINTF (t, 9, "Queue: discard (not running) %s", l->Decode (t));
+    TRACEPRINTF (t, 9, "Queue: discard (not running) %s", l->decode (t));
 }
 
 void
@@ -796,7 +796,7 @@ Router::queue_L_Busmonitor (LBusmonPtr l)
         mtrigger.send();
     }
   else
-    TRACEPRINTF (t, 9, "MonQueue: discard (not running) %s", l->Decode (t));
+    TRACEPRINTF (t, 9, "MonQueue: discard (not running) %s", l->decode (t));
 }
 
 bool
@@ -1047,13 +1047,13 @@ Router::trigger_cb (ev::async &, int)
           ITER(i,vbusmonitor)
           i->cb->send_L_Busmonitor (LBusmonPtr(new L_Busmon_PDU (*l2)));
         }
-      if (!l1->hop_count)
+      if (!l1->hop_count_type)
         {
-          TRACEPRINTF (t, 3, "Hopcount zero: %s", l1->Decode (t));
+          TRACEPRINTF (t, 3, "Hopcount zero: %s", l1->decode (t));
           goto next;
         }
-      if (l1->hop_count < 7 || !force_broadcast)
-        l1->hop_count--;
+      if (l1->hop_count_type < 7 || !force_broadcast)
+        l1->hop_count_type--;
 
       if (l1->repeated)
         {
@@ -1061,7 +1061,7 @@ Router::trigger_cb (ev::async &, int)
           ITER (i,ignore)
           if (d1 == i->data)
             {
-              TRACEPRINTF (t, 9, "Drop: %s", l1->Decode (t));
+              TRACEPRINTF (t, 9, "Drop: %s", l1->decode (t));
               goto next;
             }
         }
@@ -1119,11 +1119,11 @@ Router::send_L_Data(LDataPtr l1)
         auto ii = i->second;
         if (ii->state != L_up)
           continue;
-        if(!has_send_more(ii))
+        if (!has_send_more(ii))
           continue;
         if (ii->hasAddress(l1->source_address))
           continue;
-        if (l1->hop_count == 7 || ii->checkGroupAddress(l1->destination_address))
+        if (l1->hop_count_type == 7 || ii->checkGroupAddress(l1->destination_address))
           i->second->send_L_Data (LDataPtr(new L_Data_PDU (*l1)));
       }
     }
@@ -1151,11 +1151,11 @@ Router::send_L_Data(LDataPtr l1)
         auto ii = i->second;
         if (ii->state != L_up)
           continue;
-        if(!has_send_more(ii))
+        if (!has_send_more(ii))
           continue;
         if (ii->hasAddress (l1->source_address))
           continue;
-        if (l1->hop_count == 7 || found ? ii->hasAddress (l1->destination_address) : ii->checkAddress (l1->destination_address))
+        if (l1->hop_count_type == 7 || found ? ii->hasAddress (l1->destination_address) : ii->checkAddress (l1->destination_address))
           i->second->send_L_Data (LDataPtr(new L_Data_PDU (*l1)));
       }
     }
@@ -1170,7 +1170,7 @@ Router::mtrigger_cb (ev::async &, int)
     {
       LBusmonPtr l1 = mbuf.get ();
 
-      TRACEPRINTF (t, 3, "RecvMon %s", l1->Decode (t));
+      TRACEPRINTF (t, 3, "RecvMon %s", l1->decode (t));
       ITER (i, busmonitor)
       i->cb->send_L_Busmonitor (LBusmonPtr(new L_Busmon_PDU (*l1)));
     }

@@ -25,7 +25,7 @@ L_Data_ToCEMI (uint8_t code, const LDataPtr & l1)
   CArray pdu;
   assert (l1->lsdu.size() >= 1);
   assert (l1->lsdu.size() < 0xff);
-  assert ((l1->hop_count & 0xf8) == 0);
+  assert ((l1->hop_count_type & 0xf8) == 0);
 
   pdu.resize (l1->lsdu.size() + 9);
   pdu[0] = code;
@@ -37,7 +37,7 @@ L_Data_ToCEMI (uint8_t code, const LDataPtr & l1)
     pdu[2] |= 0x20;
   pdu[3] =
     (l1->address_type == GroupAddress ? 0x80 : 0x00) |
-    ((l1->hop_count & 0x7) << 4) | 0x0;
+    ((l1->hop_count_type & 0x7) << 4) | 0x0;
   pdu[4] = (l1->source_address >> 8) & 0xff;
   pdu[5] = (l1->source_address) & 0xff;
   pdu[6] = (l1->destination_address >> 8) & 0xff;
@@ -76,8 +76,9 @@ CEMI_to_L_Data (const CArray & data, TracePtr tr)
   else
     c->repeated = 0;
   c->priority = static_cast<EIB_Priority>((data[start] >> 2) & 0x3);
-  c->hop_count = (data[start + 1] >> 4) & 0x07;
   c->address_type = (data[start + 1] & 0x80) ? GroupAddress : IndividualAddress;
+  c->lsdu_ctrl = data[start + 1] & 0x70;
+  c->hop_count_type = c->lsdu_ctrl >> 4;;
   if (!(data[start] & 0x80) && (data[start + 1] & 0x0f))
     {
       TRACEPRINTF (tr, 7, "Length? invalid (%02x%02x)", data[start],data[start+1]);
@@ -140,9 +141,9 @@ L_Data_ToEMI (uint8_t code, const LDataPtr & l1)
   pdu[4] = (l1->destination_address >> 8) & 0xff;
   pdu[5] = (l1->destination_address) & 0xff;
   pdu[6] =
-    (l1->hop_count & 0x07) << 4 |
-    ((l1->lsdu.size() - 1) & 0x0f) |
-    (l1->address_type == GroupAddress ? 0x80 : 0x00);
+    (l1->address_type == GroupAddress ? 0x80 : 0x00) |
+    (l1->hop_count_type & 0x07) << 4 |
+    ((l1->lsdu.size() - 1) & 0x0f);
   pdu.setpart (l1->lsdu.data(), 7, l1->lsdu.size());
   return pdu;
 }
@@ -160,10 +161,11 @@ EMI_to_L_Data (const CArray & data, TracePtr)
   c->destination_address = (data[4] << 8) | (data[5]);
   c->priority = static_cast<EIB_Priority>((data[1] >> 2) & 0x3);
   c->address_type = (data[6] & 0x80) ? GroupAddress : IndividualAddress;
+  c->lsdu_ctrl = data[6] & 0x70;
+  c->hop_count_type = c->lsdu_ctrl >> 4;
   len = (data[6] & 0x0f) + 1;
   if (len > data.size() - 7)
     len = data.size() - 7;
   c->lsdu.set (data.data() + 7, len);
-  c->hop_count = (data[6] >> 4) & 0x07;
   return c;
 }

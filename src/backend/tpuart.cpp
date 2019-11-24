@@ -262,8 +262,8 @@ TPUARTwrap::RecvLPDU (const uint8_t * data, int len)
   else if (state > T_start)
     {
       LPDUPtr l = CM_TP1_to_L_Data (CArray (data, len), t);
-      if (l->getType () != L_Data)
-        TRACEPRINTF (t, 1, "dropping packet: type %d", l->getType ());
+      if (l->getLType () != L_Data)
+        TRACEPRINTF (t, 1, "dropping packet: type %d", l->getLType ());
       else
         {
           if (((L_Data_PDU *)(&*l))->valid_checksum)

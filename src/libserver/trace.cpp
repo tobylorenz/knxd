@@ -91,9 +91,9 @@ error_level(const std::string level, const int def)
 {
   if (level.size() == 0)
     return def;
-  if(isdigit(level[0]))
+  if (isdigit(level[0]))
     return strtoul(level.c_str(), NULL, 0);
-  for(unsigned int i = 0; i < sizeof(error_levels)/sizeof(error_levels[0]); i++)
+  for (unsigned int i = 0; i < sizeof(error_levels)/sizeof(error_levels[0]); i++)
     if (level == error_levels[i])
       return i;
   return -1; // warning

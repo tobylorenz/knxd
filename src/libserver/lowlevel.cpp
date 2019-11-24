@@ -146,7 +146,7 @@ FDdriver::FDdriver (LowLevelIface* p, IniSectionPtr& s)
 bool
 FDdriver::setup()
 {
-  if(!LowLevelDriver::setup())
+  if (!LowLevelDriver::setup())
     return false;
 
   return true;

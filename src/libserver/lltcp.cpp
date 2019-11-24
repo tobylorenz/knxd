@@ -32,7 +32,7 @@
 bool
 LLtcp::setup()
 {
-  if(!FDdriver::setup())
+  if (!FDdriver::setup())
     return false;
 
   dest = cfg->value("ip-address","");

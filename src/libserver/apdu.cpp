@@ -19,11 +19,8 @@
 
 #include "apdu.h"
 
-#include <cstdio>
-#include <cstring>
-
 APDUPtr
-APDU::fromPacket (const CArray & c, TracePtr tr)
+APDU::fromPacket (const CArray & o6, TracePtr tr)
 {
   /* @todo provide additional parameter or split function to differentiate:
    * - multicast
@@ -32,274 +29,244 @@ APDU::fromPacket (const CArray & c, TracePtr tr)
    * - p2p connectionless
    * - p2p connection-oriented
    */
-  APDUPtr a;
-  if (c.size() >= 2)
+  APDUPtr apdu;
+  if (o6.size() >= 2)
     {
-      uint16_t apci = ((c[0] & 0x03) << 8) | c[1];
+      uint16_t apci = ((o6[0] & 0x03) << 8) | o6[1];
       switch (apci)
         {
         case A_GroupValue_Read:
-          a = APDUPtr(new A_GroupValue_Read_PDU ());
+          apdu = APDUPtr(new A_GroupValue_Read_PDU ());
           break;
         case A_GroupValue_Response ... A_GroupValue_Response | 0x03F:
-          a = APDUPtr(new A_GroupValue_Response_PDU ());
+          apdu = APDUPtr(new A_GroupValue_Response_PDU ());
           break;
         case A_GroupValue_Write ... A_GroupValue_Write | 0x03F:
-          a = APDUPtr(new A_GroupValue_Write_PDU ());
+          apdu = APDUPtr(new A_GroupValue_Write_PDU ());
           break;
         case A_IndividualAddress_Write:
-          a = APDUPtr(new A_IndividualAddress_Write_PDU ());
+          apdu = APDUPtr(new A_IndividualAddress_Write_PDU ());
           break;
         case A_IndividualAddress_Read:
-          a = APDUPtr(new A_IndividualAddress_Read_PDU ());
+          apdu = APDUPtr(new A_IndividualAddress_Read_PDU ());
           break;
         case A_IndividualAddress_Response:
-          a = APDUPtr(new A_IndividualAddress_Response_PDU ());
+          apdu = APDUPtr(new A_IndividualAddress_Response_PDU ());
           break;
         case A_ADC_Read ... A_ADC_Read | 0x03F:
-          a = APDUPtr(new A_ADC_Read_PDU ());
+          apdu = APDUPtr(new A_ADC_Read_PDU ());
           break;
         case A_ADC_Response ... A_ADC_Response | 0x03F:
-          a = APDUPtr(new A_ADC_Response_PDU ());
+          apdu = APDUPtr(new A_ADC_Response_PDU ());
           break;
         /* @todo
         case A_SystemNetworkParameter_Read: // same as A_ADC_Response with channel_nr=0x80
-          a = APDUPtr(new A_SystemNetworkParameter_Read_PDU ());
+          apdu = APDUPtr(new A_SystemNetworkParameter_Read_PDU ());
           break;
         case A_SystemNetworkParameter_Response: // same as A_ADC_Response with channel_nr=0x81
-          a = APDUPtr(new A_SystemNetworkParameter_Response_PDU ());
+          apdu = APDUPtr(new A_SystemNetworkParameter_Response_PDU ());
           break;
         case A_SystemNetworkParameter_Write: // same as A_ADC_Response with channel_nr=0x82
-          a = APDUPtr(new A_SystemNetworkParameter_Write_PDU ());
+          apdu = APDUPtr(new A_SystemNetworkParameter_Write_PDU ());
           break;
         */
         case A_Memory_Read ... A_Memory_Read | 0x00F:
-          a = APDUPtr(new A_Memory_Read_PDU ());
+          apdu = APDUPtr(new A_Memory_Read_PDU ());
           break;
         case A_Memory_Response ... A_Memory_Response | 0x00F:
-          a = APDUPtr(new A_Memory_Response_PDU ());
+          apdu = APDUPtr(new A_Memory_Response_PDU ());
           break;
         case A_Memory_Write ... A_Memory_Write | 0x00F:
-          a = APDUPtr(new A_Memory_Write_PDU ());
+          apdu = APDUPtr(new A_Memory_Write_PDU ());
           break;
         case A_UserMemory_Read:
-          a = APDUPtr(new A_UserMemory_Read_PDU ());
+          apdu = APDUPtr(new A_UserMemory_Read_PDU ());
           break;
         case A_UserMemory_Response:
-          a = APDUPtr(new A_UserMemory_Response_PDU ());
+          apdu = APDUPtr(new A_UserMemory_Response_PDU ());
           break;
         case A_UserMemory_Write:
-          a = APDUPtr(new A_UserMemory_Write_PDU ());
+          apdu = APDUPtr(new A_UserMemory_Write_PDU ());
           break;
         case A_UserMemoryBit_Write:
-          a = APDUPtr(new A_UserMemoryBit_Write_PDU ());
+          apdu = APDUPtr(new A_UserMemoryBit_Write_PDU ());
           break;
         case A_UserManufacturerInfo_Read:
-          a = APDUPtr(new A_UserManufacturerInfo_Read_PDU ());
+          apdu = APDUPtr(new A_UserManufacturerInfo_Read_PDU ());
           break;
         case A_UserManufacturerInfo_Response:
-          a = APDUPtr(new A_UserManufacturerInfo_Response_PDU ());
+          apdu = APDUPtr(new A_UserManufacturerInfo_Response_PDU ());
           break;
         case A_FunctionPropertyCommand:
-          a = APDUPtr(new A_FunctionPropertyCommand_PDU ());
+          apdu = APDUPtr(new A_FunctionPropertyCommand_PDU ());
           break;
         case A_FunctionPropertyState_Read:
-          a = APDUPtr(new A_FunctionPropertyState_Read_PDU ());
+          apdu = APDUPtr(new A_FunctionPropertyState_Read_PDU ());
           break;
         case A_FunctionPropertyState_Response:
-          a = APDUPtr(new A_FunctionPropertyState_Response_PDU ());
+          apdu = APDUPtr(new A_FunctionPropertyState_Response_PDU ());
           break;
         case A_DeviceDescriptor_Read ... A_DeviceDescriptor_Read | 0x03F:
-          a = APDUPtr(new A_DeviceDescriptor_Read_PDU ());
+          apdu = APDUPtr(new A_DeviceDescriptor_Read_PDU ());
           break;
         case A_DeviceDescriptor_Response ... A_DeviceDescriptor_Response | 0x03F:
-          a = APDUPtr(new A_DeviceDescriptor_Response_PDU ());
+          apdu = APDUPtr(new A_DeviceDescriptor_Response_PDU ());
           break;
         case A_Restart ... A_Restart | 0x01F:
-          a = APDUPtr(new A_Restart_PDU ());
+          apdu = APDUPtr(new A_Restart_PDU ());
           break;
         case A_Restart_Response ... A_Restart_Response | 0x01F:
-          a = APDUPtr(new A_Restart_Response_PDU ());
+          apdu = APDUPtr(new A_Restart_Response_PDU ());
           break;
         case A_Open_Routing_Table_Request:
-          a = APDUPtr(new A_Open_Routing_Table_Request_PDU ());
+          apdu = APDUPtr(new A_Open_Routing_Table_Request_PDU ());
           break;
         case A_Read_Routing_Table_Request:
-          a = APDUPtr(new A_Read_Routing_Table_Request_PDU ());
+          apdu = APDUPtr(new A_Read_Routing_Table_Request_PDU ());
           break;
         case A_Read_Routing_Table_Response:
-          a = APDUPtr(new A_Read_Routing_Table_Response_PDU ());
+          apdu = APDUPtr(new A_Read_Routing_Table_Response_PDU ());
           break;
         case A_Write_Routing_Table_Request:
-          a = APDUPtr(new A_Write_Routing_Table_Request_PDU ());
+          apdu = APDUPtr(new A_Write_Routing_Table_Request_PDU ());
           break;
         case A_Read_Router_Memory_Request:
-          a = APDUPtr(new A_Read_Router_Memory_Request_PDU ());
+          apdu = APDUPtr(new A_Read_Router_Memory_Request_PDU ());
           break;
         case A_Read_Router_Memory_Response:
-          a = APDUPtr(new A_Read_Router_Memory_Response_PDU ());
+          apdu = APDUPtr(new A_Read_Router_Memory_Response_PDU ());
           break;
         case A_Write_Router_Memory_Request:
-          a = APDUPtr(new A_Write_Router_Memory_Request_PDU ());
+          apdu = APDUPtr(new A_Write_Router_Memory_Request_PDU ());
           break;
         case A_Read_Router_Status_Request:
-          a = APDUPtr(new A_Read_Router_Status_Request_PDU ());
+          apdu = APDUPtr(new A_Read_Router_Status_Request_PDU ());
           break;
         case A_Read_Router_Status_Response:
-          a = APDUPtr(new A_Read_Router_Status_Response_PDU ());
+          apdu = APDUPtr(new A_Read_Router_Status_Response_PDU ());
           break;
         case A_Write_Router_Status_Request:
-          a = APDUPtr(new A_Write_Router_Status_Request_PDU ());
+          apdu = APDUPtr(new A_Write_Router_Status_Request_PDU ());
           break;
         case A_MemoryBit_Write:
-          a = APDUPtr(new A_MemoryBit_Write_PDU ());
+          apdu = APDUPtr(new A_MemoryBit_Write_PDU ());
           break;
         case A_Authorize_Request:
-          a = APDUPtr(new A_Authorize_Request_PDU ());
+          apdu = APDUPtr(new A_Authorize_Request_PDU ());
           break;
         case A_Authorize_Response:
-          a = APDUPtr(new A_Authorize_Response_PDU ());
+          apdu = APDUPtr(new A_Authorize_Response_PDU ());
           break;
         case A_Key_Write:
-          a = APDUPtr(new A_Key_Write_PDU ());
+          apdu = APDUPtr(new A_Key_Write_PDU ());
           break;
         case A_Key_Response:
-          a = APDUPtr(new A_Key_Response_PDU ());
+          apdu = APDUPtr(new A_Key_Response_PDU ());
           break;
         case A_PropertyValue_Read:
-          a = APDUPtr(new A_PropertyValue_Read_PDU ());
+          apdu = APDUPtr(new A_PropertyValue_Read_PDU ());
           break;
         case A_PropertyValue_Response:
-          a = APDUPtr(new A_PropertyValue_Response_PDU ());
+          apdu = APDUPtr(new A_PropertyValue_Response_PDU ());
           break;
         case A_PropertyValue_Write:
-          a = APDUPtr(new A_PropertyValue_Write_PDU ());
+          apdu = APDUPtr(new A_PropertyValue_Write_PDU ());
           break;
         case A_PropertyDescription_Read:
-          a = APDUPtr(new A_PropertyDescription_Read_PDU ());
+          apdu = APDUPtr(new A_PropertyDescription_Read_PDU ());
           break;
         case A_PropertyDescription_Response:
-          a = APDUPtr(new A_PropertyDescription_Response_PDU ());
+          apdu = APDUPtr(new A_PropertyDescription_Response_PDU ());
           break;
         case A_NetworkParameter_Read:
-          a = APDUPtr(new A_NetworkParameter_Read_PDU ());
+          apdu = APDUPtr(new A_NetworkParameter_Read_PDU ());
           break;
         case A_NetworkParameter_Response:
-          a = APDUPtr(new A_NetworkParameter_Response_PDU ());
+          apdu = APDUPtr(new A_NetworkParameter_Response_PDU ());
           break;
         case A_IndividualAddressSerialNumber_Read:
-          a = APDUPtr(new A_IndividualAddressSerialNumber_Read_PDU ());
+          apdu = APDUPtr(new A_IndividualAddressSerialNumber_Read_PDU ());
           break;
         case A_IndividualAddressSerialNumber_Response:
-          a = APDUPtr(new A_IndividualAddressSerialNumber_Response_PDU ());
+          apdu = APDUPtr(new A_IndividualAddressSerialNumber_Response_PDU ());
           break;
         case A_IndividualAddressSerialNumber_Write:
-          a = APDUPtr(new A_IndividualAddressSerialNumber_Write_PDU ());
+          apdu = APDUPtr(new A_IndividualAddressSerialNumber_Write_PDU ());
           break;
         case A_ServiceInformation_Indication_Write:
-          a = APDUPtr(new A_ServiceInformation_Indication_Write_PDU ());
+          apdu = APDUPtr(new A_ServiceInformation_Indication_Write_PDU ());
           break;
         case A_DomainAddress_Write:
-          a = APDUPtr(new A_DomainAddress_Write_PDU ());
+          apdu = APDUPtr(new A_DomainAddress_Write_PDU ());
           break;
         case A_DomainAddress_Read:
-          a = APDUPtr(new A_DomainAddress_Read_PDU ());
+          apdu = APDUPtr(new A_DomainAddress_Read_PDU ());
           break;
         case A_DomainAddress_Response:
-          a = APDUPtr(new A_DomainAddress_Response_PDU ());
+          apdu = APDUPtr(new A_DomainAddress_Response_PDU ());
           break;
         case A_DomainAddressSelective_Read:
-          a = APDUPtr(new A_DomainAddressSelective_Read_PDU ());
+          apdu = APDUPtr(new A_DomainAddressSelective_Read_PDU ());
           break;
         case A_NetworkParameter_Write:
-          a = APDUPtr(new A_NetworkParameter_Write_PDU ());
+          apdu = APDUPtr(new A_NetworkParameter_Write_PDU ());
           break;
         case A_Link_Read:
-          a = APDUPtr(new A_Link_Read_PDU ());
+          apdu = APDUPtr(new A_Link_Read_PDU ());
           break;
         case A_Link_Response:
-          a = APDUPtr(new A_Link_Response_PDU ());
+          apdu = APDUPtr(new A_Link_Response_PDU ());
           break;
         case A_Link_Write:
-          a = APDUPtr(new A_Link_Write_PDU ());
+          apdu = APDUPtr(new A_Link_Write_PDU ());
           break;
         case A_GroupPropValue_Read:
-          a = APDUPtr(new A_GroupPropValue_Read_PDU ());
+          apdu = APDUPtr(new A_GroupPropValue_Read_PDU ());
           break;
         case A_GroupPropValue_Response:
-          a = APDUPtr(new A_GroupPropValue_Response_PDU ());
+          apdu = APDUPtr(new A_GroupPropValue_Response_PDU ());
           break;
         case A_GroupPropValue_Write:
-          a = APDUPtr(new A_GroupPropValue_Write_PDU ());
+          apdu = APDUPtr(new A_GroupPropValue_Write_PDU ());
           break;
         case A_GroupPropValue_InfoReport:
-          a = APDUPtr(new A_GroupPropValue_InfoReport_PDU ());
+          apdu = APDUPtr(new A_GroupPropValue_InfoReport_PDU ());
           break;
         case A_DomainAddressSerialNumber_Read:
-          a = APDUPtr(new A_DomainAddressSerialNumber_Read_PDU ());
+          apdu = APDUPtr(new A_DomainAddressSerialNumber_Read_PDU ());
           break;
         case A_DomainAddressSerialNumber_Response:
-          a = APDUPtr(new A_DomainAddressSerialNumber_Response_PDU ());
+          apdu = APDUPtr(new A_DomainAddressSerialNumber_Response_PDU ());
           break;
         case A_DomainAddressSerialNumber_Write:
-          a = APDUPtr(new A_DomainAddressSerialNumber_Write_PDU ());
+          apdu = APDUPtr(new A_DomainAddressSerialNumber_Write_PDU ());
           break;
         case A_FileStream_InfoReport:
-          a = APDUPtr(new A_FileStream_InfoReport_PDU ());
+          apdu = APDUPtr(new A_FileStream_InfoReport_PDU ());
           break;
         default:
           break;
         }
     }
-  if (a && a->init (c, tr))
-    return a;
-  a = APDUPtr(new A_Unknown_PDU);
-  a->init (c, tr);
-  return a;
+  if (apdu && apdu->init (o6, tr))
+    return apdu;
+
+  return nullptr;
 }
 
-/* A_Unknown_PDU */
+/* A_GroupValue_Read_PDU */
 
 bool
-A_Unknown_PDU::init (const CArray & c, TracePtr)
-{
-  pdu = c;
-  return true;
-}
-
-CArray A_Unknown_PDU::ToPacket () const
-{
-  return pdu;
-}
-
-std::string A_Unknown_PDU::Decode (TracePtr) const
-{
-  if (pdu.size() == 0)
-    return "empty APDU";
-
-  std::string s ("Unknown APDU: ");
-  C_ITER (i, pdu)
-  addHex (s, *i);
-
-  return s;
-}
-
-bool A_Unknown_PDU::isResponse (const APDU *) const
-{
-  return false;
-}
-
-/* A_GroupValue_Read */
-
-bool
-A_GroupValue_Read_PDU::init (const CArray & c, TracePtr)
+A_GroupValue_Read_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() != 2)
     return false;
-  return true;
+
+  return T_Data_Group_PDU::init(c, tr);
 }
 
-CArray A_GroupValue_Read_PDU::ToPacket () const
+CArray
+A_GroupValue_Read_PDU::ToPacket () const
 {
   CArray pdu;
   pdu.resize(2);
@@ -308,20 +275,25 @@ CArray A_GroupValue_Read_PDU::ToPacket () const
   return pdu;
 }
 
-std::string A_GroupValue_Read_PDU::Decode (TracePtr) const
+std::string
+A_GroupValue_Read_PDU::decode (TracePtr tr) const
 {
-  return "A_GroupValue_Read";
+  std::string s;
+  s = T_Data_Group_PDU::decode(tr);
+  s += " A_GroupValue_Read";
+  return s;
 }
 
-bool A_GroupValue_Read_PDU::isResponse (const APDU *) const
+bool
+A_GroupValue_Read_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_GroupValue_Response */
+/* A_GroupValue_Response_PDU */
 
 bool
-A_GroupValue_Response_PDU::init (const CArray & c, TracePtr)
+A_GroupValue_Response_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() < 2)
     return false;
@@ -336,10 +308,11 @@ A_GroupValue_Response_PDU::init (const CArray & c, TracePtr)
     {
       data.set (c.data() + 2, c.size() - 2);
     }
-  return true;
+  return T_Data_Group_PDU::init(c, tr);
 }
 
-CArray A_GroupValue_Response_PDU::ToPacket () const
+CArray
+A_GroupValue_Response_PDU::ToPacket () const
 {
   assert (!issmall || (data.size() == 1 && (data[0] & 0xC0) == 0));
 
@@ -359,11 +332,14 @@ CArray A_GroupValue_Response_PDU::ToPacket () const
   return pdu;
 }
 
-std::string A_GroupValue_Response_PDU::Decode (TracePtr) const
+std::string
+A_GroupValue_Response_PDU::decode (TracePtr tr) const
 {
   assert (!issmall || (data.size() == 1 && (data[0] & 0xC0) == 0));
 
-  std::string s ("A_GroupValue_Response ");
+  std::string s;
+  s = T_Data_Group_PDU::decode(tr);
+  s += " A_GroupValue_Response ";
   if (issmall)
     s += "(small) ";
   C_ITER (i, data)
@@ -371,17 +347,18 @@ std::string A_GroupValue_Response_PDU::Decode (TracePtr) const
   return s;
 }
 
-bool A_GroupValue_Response_PDU::isResponse (const APDU * req) const
+bool
+A_GroupValue_Response_PDU::isResponse (const APDU * req) const
 {
-  if (req->getType () != A_GroupValue_Read)
+  if (req->getAType () != A_GroupValue_Read)
     return false;
   return true;
 }
 
-/* A_GroupValue_Write */
+/* A_GroupValue_Write_PDU */
 
 bool
-A_GroupValue_Write_PDU::init (const CArray & c, TracePtr)
+A_GroupValue_Write_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() < 2)
     return false;
@@ -396,10 +373,11 @@ A_GroupValue_Write_PDU::init (const CArray & c, TracePtr)
     {
       data.set (c.data() + 2, c.size() - 2);
     }
-  return true;
+  return T_Data_Group_PDU::init(c, tr);;
 }
 
-CArray A_GroupValue_Write_PDU::ToPacket () const
+CArray
+A_GroupValue_Write_PDU::ToPacket () const
 {
   assert (!issmall || (data.size() == 1 && (data[0] & 0xC0) == 0));
 
@@ -419,11 +397,14 @@ CArray A_GroupValue_Write_PDU::ToPacket () const
   return pdu;
 }
 
-std::string A_GroupValue_Write_PDU::Decode (TracePtr) const
+std::string
+A_GroupValue_Write_PDU::decode (TracePtr tr) const
 {
   assert (!issmall || (data.size() == 1 && (data[0] & 0xC0) == 0));
 
-  std::string s ("A_GroupValue_Write ");
+  std::string s;
+  s = T_Data_Group_PDU::decode(tr);
+  s += " A_GroupValue_Write ";
   if (issmall)
     s += "(small) ";
   C_ITER (i, data)
@@ -431,24 +412,26 @@ std::string A_GroupValue_Write_PDU::Decode (TracePtr) const
   return s;
 }
 
-bool A_GroupValue_Write_PDU::isResponse (const APDU *) const
+bool
+A_GroupValue_Write_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_IndividualAddress_Write */
+/* A_IndividualAddress_Write_PDU */
 
 bool
-A_IndividualAddress_Write_PDU::init (const CArray & c, TracePtr)
+A_IndividualAddress_Write_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() != 4)
     return false;
 
   newaddress = (c[2] << 8) | (c[3]);
-  return true;
+  return T_Data_Broadcast_PDU::init(c, tr);;
 }
 
-CArray A_IndividualAddress_Write_PDU::ToPacket () const
+CArray
+A_IndividualAddress_Write_PDU::ToPacket () const
 {
   CArray pdu;
   pdu.resize (4);
@@ -459,28 +442,35 @@ CArray A_IndividualAddress_Write_PDU::ToPacket () const
   return pdu;
 }
 
-std::string A_IndividualAddress_Write_PDU::Decode (TracePtr) const
+std::string
+A_IndividualAddress_Write_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_IndividualAddress_Write ");
-  return s + FormatEIBAddr (newaddress);
+  std::string s;
+  s = T_Data_Broadcast_PDU::decode(tr);
+  s += " A_IndividualAddress_Write ";
+  s += FormatEIBAddr (newaddress);
+  return s;
 }
 
-bool A_IndividualAddress_Write_PDU::isResponse (const APDU *) const
+bool
+A_IndividualAddress_Write_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_IndividualAddress_Read */
+/* A_IndividualAddress_Read_PDU */
 
 bool
-A_IndividualAddress_Read_PDU::init (const CArray & c, TracePtr)
+A_IndividualAddress_Read_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() != 2)
     return false;
-  return true;
+
+  return T_Data_Broadcast_PDU::init(c, tr);
 }
 
-CArray A_IndividualAddress_Read_PDU::ToPacket () const
+CArray
+A_IndividualAddress_Read_PDU::ToPacket () const
 {
   CArray pdu;
   pdu.resize(2);
@@ -489,29 +479,37 @@ CArray A_IndividualAddress_Read_PDU::ToPacket () const
   return pdu;
 }
 
-std::string A_IndividualAddress_Read_PDU::Decode (TracePtr) const
+std::string
+A_IndividualAddress_Read_PDU::decode (TracePtr tr) const
 {
-  return "A_IndividualAddress_Read";
+  std::string s;
+  s = T_Data_Broadcast_PDU::decode(tr);
+  s += " A_IndividualAddress_Read";
+  return s;
 }
 
-bool A_IndividualAddress_Read_PDU::isResponse (const APDU *) const
+bool
+A_IndividualAddress_Read_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_IndividualAddress_Response */
+/* A_IndividualAddress_Response_PDU */
 
-bool A_IndividualAddress_Response_PDU::init (const CArray & c, TracePtr tr)
+bool
+A_IndividualAddress_Response_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() != 2)
     {
       TRACEPRINTF (tr, 3, "BadLen %d",c.size());
       return false;
     }
-  return true;
+
+  return T_Data_Broadcast_PDU::init(c, tr);
 }
 
-CArray A_IndividualAddress_Response_PDU::ToPacket () const
+CArray
+A_IndividualAddress_Response_PDU::ToPacket () const
 {
   CArray pdu;
   pdu.resize(2);
@@ -520,29 +518,34 @@ CArray A_IndividualAddress_Response_PDU::ToPacket () const
   return pdu;
 }
 
-std::string A_IndividualAddress_Response_PDU::Decode (TracePtr) const
+std::string
+A_IndividualAddress_Response_PDU::decode (TracePtr tr) const
 {
-  return "A_IndividualAddress_Response";
+  std::string s;
+  s = T_Data_Broadcast_PDU::decode(tr);
+  s += " A_IndividualAddress_Response";
+  return s;
 }
 
-bool A_IndividualAddress_Response_PDU::isResponse (const APDU * req) const
+bool
+A_IndividualAddress_Response_PDU::isResponse (const APDU * req) const
 {
-  if (req->getType () != A_IndividualAddress_Read)
+  if (req->getAType () != A_IndividualAddress_Read)
     return false;
   return true;
 }
 
-/* A_ADC_Read */
+/* A_ADC_Read_PDU */
 
 bool
-A_ADC_Read_PDU::init (const CArray & c, TracePtr)
+A_ADC_Read_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() != 3)
     return false;
 
   channel_nr = c[1] & 0x3F;
   read_count = c[2];
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -559,26 +562,29 @@ A_ADC_Read_PDU::ToPacket () const
 }
 
 std::string
-A_ADC_Read_PDU::Decode (TracePtr) const
+A_ADC_Read_PDU::decode (TracePtr tr) const
 {
   assert ((channel_nr & 0xC0) == 0);
 
-  std::string s ("A_ADC_Read Channel:");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_ADC_Read Channel:";
   addHex (s, channel_nr);
   s += " Count: ";
   addHex (s, read_count);
   return s;
 }
 
-bool A_ADC_Read_PDU::isResponse (const APDU *) const
+bool
+A_ADC_Read_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_ADC_Response */
+/* A_ADC_Response_PDU */
 
 bool
-A_ADC_Response_PDU::init (const CArray & c, TracePtr)
+A_ADC_Response_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() != 5)
     return false;
@@ -586,7 +592,7 @@ A_ADC_Response_PDU::init (const CArray & c, TracePtr)
   channel_nr = c[1] & 0x3F;
   read_count = c[2];
   sum = (c[3] << 8) | (c[4]);
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -605,11 +611,13 @@ A_ADC_Response_PDU::ToPacket () const
 }
 
 std::string
-A_ADC_Response_PDU::Decode (TracePtr) const
+A_ADC_Response_PDU::decode (TracePtr tr) const
 {
   assert ((channel_nr & 0xC0) == 0);
 
-  std::string s ("A_ADC_Response Channel:");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_ADC_Response Channel:";
   addHex (s, channel_nr);
   s += " Count: ";
   addHex (s, read_count);
@@ -618,9 +626,10 @@ A_ADC_Response_PDU::Decode (TracePtr) const
   return s;
 }
 
-bool A_ADC_Response_PDU::isResponse (const APDU * req) const
+bool
+A_ADC_Response_PDU::isResponse (const APDU * req) const
 {
-  if (req->getType () != A_ADC_Read)
+  if (req->getAType () != A_ADC_Read)
     return false;
   const A_ADC_Read_PDU * a = (const A_ADC_Read_PDU *) req;
   if (a->channel_nr != channel_nr)
@@ -630,15 +639,16 @@ bool A_ADC_Response_PDU::isResponse (const APDU * req) const
   return true;
 }
 
-/* A_SystemNetworkParameter_Read */
+/* A_SystemNetworkParameter_Read_PDU */
 
 bool
-A_SystemNetworkParameter_Read_PDU::init (const CArray & c, TracePtr)
+A_SystemNetworkParameter_Read_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() < 5)
     return false;
+
   // @todo
-  return true;
+  return T_Data_SystemBroadcast_PDU::init(c, tr);
 }
 
 CArray
@@ -653,27 +663,31 @@ A_SystemNetworkParameter_Read_PDU::ToPacket () const
 }
 
 std::string
-A_SystemNetworkParameter_Read_PDU::Decode (TracePtr) const
+A_SystemNetworkParameter_Read_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_SystemNetworkParameter_Read");
+  std::string s;
+  s = T_Data_SystemBroadcast_PDU::decode(tr);
+  s += " A_SystemNetworkParameter_Read";
   // @todo
   return s;
 }
 
-bool A_SystemNetworkParameter_Read_PDU::isResponse (const APDU *) const
+bool
+A_SystemNetworkParameter_Read_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_SystemNetworkParameter_Response */
+/* A_SystemNetworkParameter_Response_PDU */
 
 bool
-A_SystemNetworkParameter_Response_PDU::init (const CArray & c, TracePtr)
+A_SystemNetworkParameter_Response_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() < 5)
     return false;
+
   // @todo
-  return true;
+  return T_Data_SystemBroadcast_PDU::init(c, tr);
 }
 
 CArray
@@ -688,29 +702,33 @@ A_SystemNetworkParameter_Response_PDU::ToPacket () const
 }
 
 std::string
-A_SystemNetworkParameter_Response_PDU::Decode (TracePtr) const
+A_SystemNetworkParameter_Response_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_SystemNetworkParameter_Response");
+  std::string s;
+  s = T_Data_SystemBroadcast_PDU::decode(tr);
+  s += " A_SystemNetworkParameter_Response";
   // @todo
   return s;
 }
 
-bool A_SystemNetworkParameter_Response_PDU::isResponse (const APDU * req) const
+bool
+A_SystemNetworkParameter_Response_PDU::isResponse (const APDU * req) const
 {
-  if (req->getType () != A_SystemNetworkParameter_Read)
+  if (req->getAType () != A_SystemNetworkParameter_Read)
     return false;
   return true;
 }
 
-/* A_SystemNetworkParameter_Write */
+/* A_SystemNetworkParameter_Write_PDU */
 
 bool
-A_SystemNetworkParameter_Write_PDU::init (const CArray & c, TracePtr)
+A_SystemNetworkParameter_Write_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() < 6)
     return false;
+
   // @todo
-  return true;
+  return T_Data_SystemBroadcast_PDU::init(c, tr);
 }
 
 CArray
@@ -725,29 +743,32 @@ A_SystemNetworkParameter_Write_PDU::ToPacket () const
 }
 
 std::string
-A_SystemNetworkParameter_Write_PDU::Decode (TracePtr) const
+A_SystemNetworkParameter_Write_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_SystemNetworkParameter_Write");
+  std::string s;
+  s = T_Data_SystemBroadcast_PDU::decode(tr);
+  s += " A_SystemNetworkParameter_Write";
   // @todo
   return s;
 }
 
-bool A_SystemNetworkParameter_Write_PDU::isResponse (const APDU *) const
+bool
+A_SystemNetworkParameter_Write_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_Memory_Read */
+/* A_Memory_Read_PDU */
 
 bool
-A_Memory_Read_PDU::init (const CArray & c, TracePtr)
+A_Memory_Read_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() != 4)
     return false;
 
   number = c[1] & 0xf;
   address = (c[2] << 8) | c[3];
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -765,26 +786,29 @@ A_Memory_Read_PDU::ToPacket () const
 }
 
 std::string
-A_Memory_Read_PDU::Decode (TracePtr) const
+A_Memory_Read_PDU::decode (TracePtr tr) const
 {
   assert ((number & 0xf0) == 0);
 
-  std::string s ("A_Memory_Read Len: ");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_Memory_Read Len: ";
   addHex (s, number);
   s += " Addr: ";
   add16Hex (s, address);
   return s;
 }
 
-bool A_Memory_Read_PDU::isResponse (const APDU *) const
+bool
+A_Memory_Read_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_Memory_Response */
+/* A_Memory_Response_PDU */
 
 bool
-A_Memory_Response_PDU::init (const CArray & c, TracePtr)
+A_Memory_Response_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() < 4)
     return false;
@@ -794,7 +818,7 @@ A_Memory_Response_PDU::init (const CArray & c, TracePtr)
   data.set (c.data() + 4, c.size() - 4);
   if (data.size() != number)
     return false;
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -814,12 +838,14 @@ A_Memory_Response_PDU::ToPacket () const
 }
 
 std::string
-A_Memory_Response_PDU::Decode (TracePtr) const
+A_Memory_Response_PDU::decode (TracePtr tr) const
 {
   assert ((number & 0xf0) == 0);
   assert (data.size() == number);
 
-  std::string s ("A_Memory_Response Len:");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_Memory_Response Len:";
   addHex (s, number);
   s += " Addr: ";
   add16Hex (s, address);
@@ -829,9 +855,10 @@ A_Memory_Response_PDU::Decode (TracePtr) const
   return s;
 }
 
-bool A_Memory_Response_PDU::isResponse (const APDU * req) const
+bool
+A_Memory_Response_PDU::isResponse (const APDU * req) const
 {
-  if (req->getType () != A_Memory_Read)
+  if (req->getAType () != A_Memory_Read)
     return false;
   const A_Memory_Read_PDU *
   a = (const A_Memory_Read_PDU *) req;
@@ -842,10 +869,10 @@ bool A_Memory_Response_PDU::isResponse (const APDU * req) const
   return true;
 }
 
-/* A_Memory_Write */
+/* A_Memory_Write_PDU */
 
 bool
-A_Memory_Write_PDU::init (const CArray & c, TracePtr)
+A_Memory_Write_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() < 4)
     return false;
@@ -855,7 +882,7 @@ A_Memory_Write_PDU::init (const CArray & c, TracePtr)
   data.set (c.data() + 4, c.size() - 4);
   if (data.size() != number)
     return false;
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -875,12 +902,14 @@ A_Memory_Write_PDU::ToPacket () const
 }
 
 std::string
-A_Memory_Write_PDU::Decode (TracePtr) const
+A_Memory_Write_PDU::decode (TracePtr tr) const
 {
   assert ((number & 0xf0) == 0);
   assert (data.size() == number);
 
-  std::string s ("A_Memory_Write Len:");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_Memory_Write Len:";
   addHex (s, number);
   s += " Addr: ";
   add16Hex (s, address);
@@ -890,15 +919,16 @@ A_Memory_Write_PDU::Decode (TracePtr) const
   return s;
 }
 
-bool A_Memory_Write_PDU::isResponse (const APDU *) const
+bool
+A_Memory_Write_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_UserMemory_Read */
+/* A_UserMemory_Read_PDU */
 
 bool
-A_UserMemory_Read_PDU::init (const CArray & c, TracePtr)
+A_UserMemory_Read_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() != 5)
     return false;
@@ -906,7 +936,7 @@ A_UserMemory_Read_PDU::init (const CArray & c, TracePtr)
   address_extension = (c[2] >> 4) & 0xf;
   number = c[2] & 0xf;
   address = (c[3] << 8) | c[4];
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -926,12 +956,14 @@ A_UserMemory_Read_PDU::ToPacket () const
 }
 
 std::string
-A_UserMemory_Read_PDU::Decode (TracePtr) const
+A_UserMemory_Read_PDU::decode (TracePtr tr) const
 {
   assert ((address_extension & 0xf0) == 0);
   assert ((number & 0xf0) == 0);
 
-  std::string s ("A_UserMemory_Read Addr_ext:");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_UserMemory_Read Addr_ext:";
   addHex (s, address_extension);
   s += " Len: ";
   addHex (s, number);
@@ -940,15 +972,16 @@ A_UserMemory_Read_PDU::Decode (TracePtr) const
   return s;
 }
 
-bool A_UserMemory_Read_PDU::isResponse (const APDU *) const
+bool
+A_UserMemory_Read_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_UserMemory_Response */
+/* A_UserMemory_Response_PDU */
 
 bool
-A_UserMemory_Response_PDU::init (const CArray & c, TracePtr)
+A_UserMemory_Response_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() < 5)
     return false;
@@ -959,7 +992,7 @@ A_UserMemory_Response_PDU::init (const CArray & c, TracePtr)
   data.set (c.data() + 5, c.size() - 5);
   if (data.size() != number)
     return false;
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -981,13 +1014,15 @@ A_UserMemory_Response_PDU::ToPacket () const
 }
 
 std::string
-A_UserMemory_Response_PDU::Decode (TracePtr) const
+A_UserMemory_Response_PDU::decode (TracePtr tr) const
 {
   assert ((address_extension & 0xf0) == 0);
   assert ((number & 0xf0) == 0);
   assert (data.size() == number);
 
-  std::string s ("A_UserMemory_Response Addr_ext:");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_UserMemory_Response Addr_ext:";
   addHex (s, address_extension);
   s += " Len: ";
   addHex (s, number);
@@ -999,9 +1034,10 @@ A_UserMemory_Response_PDU::Decode (TracePtr) const
   return s;
 }
 
-bool A_UserMemory_Response_PDU::isResponse (const APDU * req) const
+bool
+A_UserMemory_Response_PDU::isResponse (const APDU * req) const
 {
-  if (req->getType () != A_UserMemory_Read)
+  if (req->getAType () != A_UserMemory_Read)
     return false;
   const A_UserMemory_Read_PDU *
   a = (const A_UserMemory_Read_PDU *) req;
@@ -1014,10 +1050,10 @@ bool A_UserMemory_Response_PDU::isResponse (const APDU * req) const
   return true;
 }
 
-/* A_UserMemory_Write */
+/* A_UserMemory_Write_PDU */
 
 bool
-A_UserMemory_Write_PDU::init (const CArray & c, TracePtr)
+A_UserMemory_Write_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() < 5)
     return false;
@@ -1028,7 +1064,7 @@ A_UserMemory_Write_PDU::init (const CArray & c, TracePtr)
   data.set (c.data() + 5, c.size() - 5);
   if (data.size() != number)
     return false;
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -1050,13 +1086,15 @@ A_UserMemory_Write_PDU::ToPacket () const
 }
 
 std::string
-A_UserMemory_Write_PDU::Decode (TracePtr) const
+A_UserMemory_Write_PDU::decode (TracePtr tr) const
 {
   assert ((address_extension & 0xf0) == 0);
   assert ((number & 0xf0) == 0);
   assert (data.size() == number);
 
-  std::string s ("A_UserMemory_Write Addr_ext:");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_UserMemory_Write Addr_ext:";
   addHex (s, address_extension);
   s += " Len: ";
   addHex (s, number);
@@ -1068,15 +1106,16 @@ A_UserMemory_Write_PDU::Decode (TracePtr) const
   return s;
 }
 
-bool A_UserMemory_Write_PDU::isResponse (const APDU *) const
+bool
+A_UserMemory_Write_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_UserMemoryBit_Write */
+/* A_UserMemoryBit_Write_PDU */
 
 bool
-A_UserMemoryBit_Write_PDU::init (const CArray & c, TracePtr)
+A_UserMemoryBit_Write_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() < 5)
     return false;
@@ -1087,7 +1126,7 @@ A_UserMemoryBit_Write_PDU::init (const CArray & c, TracePtr)
     return false;
   and_data.set (c.data() + 5, number);
   xor_data.set (c.data() + 5 + number, number);
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -1109,12 +1148,14 @@ A_UserMemoryBit_Write_PDU::ToPacket () const
 }
 
 std::string
-A_UserMemoryBit_Write_PDU::Decode (TracePtr) const
+A_UserMemoryBit_Write_PDU::decode (TracePtr tr) const
 {
   assert (and_data.size() == number);
   assert (xor_data.size() == number);
 
-  std::string s ("A_UserMemoryBit_Write Len:");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_UserMemoryBit_Write Len:";
   addHex (s, number);
   s += "Addr: ";
   add16Hex (s, address);
@@ -1127,18 +1168,21 @@ A_UserMemoryBit_Write_PDU::Decode (TracePtr) const
   return s;
 }
 
-bool A_UserMemoryBit_Write_PDU::isResponse (const APDU *) const
+bool
+A_UserMemoryBit_Write_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_UserManufacturerInfo_Read */
+/* A_UserManufacturerInfo_Read_PDU */
 
-bool A_UserManufacturerInfo_Read_PDU::init (const CArray & c, TracePtr)
+bool
+A_UserManufacturerInfo_Read_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() != 2)
     return false;
-  return true;
+
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -1152,28 +1196,31 @@ A_UserManufacturerInfo_Read_PDU::ToPacket () const
 }
 
 std::string
-A_UserManufacturerInfo_Read_PDU::Decode (TracePtr) const
+A_UserManufacturerInfo_Read_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_UserManufacturerInfo_Read");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_UserManufacturerInfo_Read";
   return s;
 }
 
-bool A_UserManufacturerInfo_Read_PDU::isResponse (const APDU *) const
+bool
+A_UserManufacturerInfo_Read_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_UserManufacturerInfo_Response */
+/* A_UserManufacturerInfo_Response_PDU */
 
 bool
-A_UserManufacturerInfo_Response_PDU::init (const CArray & c, TracePtr)
+A_UserManufacturerInfo_Response_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() != 5)
     return false;
 
   manufacturer_id = c[2];
   manufacturer_data = (c[3] << 8) | c[4];
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -1190,26 +1237,29 @@ A_UserManufacturerInfo_Response_PDU::ToPacket () const
 }
 
 std::string
-A_UserManufacturerInfo_Response_PDU::Decode (TracePtr) const
+A_UserManufacturerInfo_Response_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_UserManufactueerInfo_Response Manufacturer:");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_UserManufactueerInfo_Response Manufacturer:";
   addHex (s, manufacturer_id);
   s += " data: ";
   add16Hex (s, manufacturer_data);
   return s;
 }
 
-bool A_UserManufacturerInfo_Response_PDU::isResponse (const APDU * req) const
+bool
+A_UserManufacturerInfo_Response_PDU::isResponse (const APDU * req) const
 {
-  if (req->getType () != A_UserManufacturerInfo_Read)
+  if (req->getAType () != A_UserManufacturerInfo_Read)
     return false;
   return true;
 }
 
-/* A_FunctionPropertyCommand */
+/* A_FunctionPropertyCommand_PDU */
 
 bool
-A_FunctionPropertyCommand_PDU::init (const CArray & c, TracePtr)
+A_FunctionPropertyCommand_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() < 4)
     return false;
@@ -1217,7 +1267,7 @@ A_FunctionPropertyCommand_PDU::init (const CArray & c, TracePtr)
   object_index = c[2];
   property_id = c[3];
   data.set (c.data() + 4, c.size() - 4);
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -1234,22 +1284,25 @@ A_FunctionPropertyCommand_PDU::ToPacket () const
 }
 
 std::string
-A_FunctionPropertyCommand_PDU::Decode (TracePtr) const
+A_FunctionPropertyCommand_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_FunctionPropertyCommand");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_FunctionPropertyCommand";
   // @todo
   return s;
 }
 
-bool A_FunctionPropertyCommand_PDU::isResponse (const APDU *) const
+bool
+A_FunctionPropertyCommand_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_FunctionPropertyState_Read */
+/* A_FunctionPropertyState_Read_PDU */
 
 bool
-A_FunctionPropertyState_Read_PDU::init (const CArray & c, TracePtr)
+A_FunctionPropertyState_Read_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() < 4)
     return false;
@@ -1257,7 +1310,7 @@ A_FunctionPropertyState_Read_PDU::init (const CArray & c, TracePtr)
   object_index = c[2];
   property_id = c[3];
   data.set (c.data() + 4, c.size() - 4);
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -1274,22 +1327,25 @@ A_FunctionPropertyState_Read_PDU::ToPacket () const
 }
 
 std::string
-A_FunctionPropertyState_Read_PDU::Decode (TracePtr) const
+A_FunctionPropertyState_Read_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_FunctionPropertyState_Read");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_FunctionPropertyState_Read";
   // @todo
   return s;
 }
 
-bool A_FunctionPropertyState_Read_PDU::isResponse (const APDU *) const
+bool
+A_FunctionPropertyState_Read_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_FunctionPropertyState_Response */
+/* A_FunctionPropertyState_Response_PDU */
 
 bool
-A_FunctionPropertyState_Response_PDU::init (const CArray & c, TracePtr)
+A_FunctionPropertyState_Response_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() < 5)
     return false;
@@ -1298,7 +1354,7 @@ A_FunctionPropertyState_Response_PDU::init (const CArray & c, TracePtr)
   property_id = c[3];
   return_code = c[4];
   data.set (c.data() + 5, c.size() - 5);
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -1316,16 +1372,19 @@ A_FunctionPropertyState_Response_PDU::ToPacket () const
 }
 
 std::string
-A_FunctionPropertyState_Response_PDU::Decode (TracePtr) const
+A_FunctionPropertyState_Response_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_FunctionPropertyState_Response");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_FunctionPropertyState_Response";
   // @todo
   return s;
 }
 
-bool A_FunctionPropertyState_Response_PDU::isResponse (const APDU * req) const
+bool
+A_FunctionPropertyState_Response_PDU::isResponse (const APDU * req) const
 {
-  if (req->getType () != A_FunctionPropertyState_Read)
+  if (req->getAType () != A_FunctionPropertyState_Read)
     return false;
   const A_FunctionPropertyState_Read_PDU *
   a = (const A_FunctionPropertyState_Read_PDU *) req;
@@ -1336,16 +1395,16 @@ bool A_FunctionPropertyState_Response_PDU::isResponse (const APDU * req) const
   return true;
 }
 
-/* A_DeviceDescriptor_Read */
+/* A_DeviceDescriptor_Read_PDU */
 
 bool
-A_DeviceDescriptor_Read_PDU::init (const CArray & c, TracePtr)
+A_DeviceDescriptor_Read_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() != 2)
     return false;
 
   descriptor_type = c[1] & 0x3F;
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -1361,23 +1420,27 @@ A_DeviceDescriptor_Read_PDU::ToPacket () const
 }
 
 std::string
-A_DeviceDescriptor_Read_PDU::Decode (TracePtr) const
+A_DeviceDescriptor_Read_PDU::decode (TracePtr tr) const
 {
   assert ((descriptor_type & 0xC0) == 0);
 
-  std::string s ("A_DeviceDescriptor_Read Type:");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_DeviceDescriptor_Read Type:";
   addHex (s, descriptor_type);
   return s;
 }
 
-bool A_DeviceDescriptor_Read_PDU::isResponse (const APDU *) const
+bool
+A_DeviceDescriptor_Read_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_DeviceDescriptor_Response */
+/* A_DeviceDescriptor_Response_PDU */
 
-bool A_DeviceDescriptor_Response_PDU::init (const CArray & c, TracePtr tr)
+bool
+A_DeviceDescriptor_Response_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() != 4)
     {
@@ -1387,7 +1450,7 @@ bool A_DeviceDescriptor_Response_PDU::init (const CArray & c, TracePtr tr)
 
   descriptor_type = c[1] & 0x3F;
   device_descriptor = (c[2] << 8) | c[3];
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -1405,20 +1468,23 @@ A_DeviceDescriptor_Response_PDU::ToPacket () const
 }
 
 std::string
-A_DeviceDescriptor_Response_PDU::Decode (TracePtr) const
+A_DeviceDescriptor_Response_PDU::decode (TracePtr tr) const
 {
   assert ((descriptor_type & 0xC0) == 0);
 
-  std::string s ("A_DeviceDescriptor_Response Type:");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_DeviceDescriptor_Response Type:";
   addHex (s, descriptor_type);
   s += " Descriptor: ";
   add16Hex (s, device_descriptor);
   return s;
 }
 
-bool A_DeviceDescriptor_Response_PDU::isResponse (const APDU * req) const
+bool
+A_DeviceDescriptor_Response_PDU::isResponse (const APDU * req) const
 {
-  if (req->getType () != A_DeviceDescriptor_Read)
+  if (req->getAType () != A_DeviceDescriptor_Read)
     return false;
   const A_DeviceDescriptor_Read_PDU *
   a = (const A_DeviceDescriptor_Read_PDU *) req;
@@ -1427,10 +1493,10 @@ bool A_DeviceDescriptor_Response_PDU::isResponse (const APDU * req) const
   return true;
 }
 
-/* A_Restart */
+/* A_Restart_PDU */
 
 bool
-A_Restart_PDU::init (const CArray & c, TracePtr)
+A_Restart_PDU::init (const CArray & c, TracePtr tr)
 {
   if ((c.size() != 2) || (c.size() != 4))
     return false;
@@ -1441,7 +1507,7 @@ A_Restart_PDU::init (const CArray & c, TracePtr)
       erase_code = c[2];
       channel_number = c[3];
     }
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -1461,21 +1527,24 @@ A_Restart_PDU::ToPacket () const
 }
 
 std::string
-A_Restart_PDU::Decode (TracePtr) const
+A_Restart_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_Restart");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_Restart";
   return s;
 }
 
-bool A_Restart_PDU::isResponse (const APDU *) const
+bool
+A_Restart_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_Restart_Response */
+/* A_Restart_Response_PDU */
 
 bool
-A_Restart_Response_PDU::init (const CArray & c, TracePtr)
+A_Restart_Response_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() != 5)
     return false;
@@ -1483,7 +1552,7 @@ A_Restart_Response_PDU::init (const CArray & c, TracePtr)
   restart_type = c[1] & 0x01;
   error_code = c[2];
   process_time = (c[3] << 8) | c[4];
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -1500,29 +1569,32 @@ A_Restart_Response_PDU::ToPacket () const
 }
 
 std::string
-A_Restart_Response_PDU::Decode (TracePtr) const
+A_Restart_Response_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_Restart_Response");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_Restart_Response";
   return s;
 }
 
-bool A_Restart_Response_PDU::isResponse (const APDU * req) const
+bool
+A_Restart_Response_PDU::isResponse (const APDU * req) const
 {
-  if (req->getType () != A_Restart)
+  if (req->getAType () != A_Restart)
     return false;
   return true;
 }
 
-/* A_Open_Routing_Table_Request */
+/* A_Open_Routing_Table_Request_PDU */
 
 bool
-A_Open_Routing_Table_Request_PDU::init (const CArray & c, TracePtr)
+A_Open_Routing_Table_Request_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() < 2)
     return false;
 
   data.set (c.data() + 2, c.size() - 2);
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -1537,29 +1609,32 @@ A_Open_Routing_Table_Request_PDU::ToPacket () const
 }
 
 std::string
-A_Open_Routing_Table_Request_PDU::Decode (TracePtr) const
+A_Open_Routing_Table_Request_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_Open_Routing_Table_Request: ");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_Open_Routing_Table_Request: ";
   C_ITER (i, data)
   addHex (s, *i);
   return s;
 }
 
-bool A_Open_Routing_Table_Request_PDU::isResponse (const APDU *) const
+bool
+A_Open_Routing_Table_Request_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_Read_Routing_Table_Request */
+/* A_Read_Routing_Table_Request_PDU */
 
 bool
-A_Read_Routing_Table_Request_PDU::init (const CArray & c, TracePtr)
+A_Read_Routing_Table_Request_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() < 2)
     return false;
 
   data.set (c.data() + 2, c.size() - 2);
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -1574,29 +1649,32 @@ A_Read_Routing_Table_Request_PDU::ToPacket () const
 }
 
 std::string
-A_Read_Routing_Table_Request_PDU::Decode (TracePtr) const
+A_Read_Routing_Table_Request_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_Read_Routing_Table_Request");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_Read_Routing_Table_Request";
   C_ITER (i, data)
   addHex (s, *i);
   return s;
 }
 
-bool A_Read_Routing_Table_Request_PDU::isResponse (const APDU *) const
+bool
+A_Read_Routing_Table_Request_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_Read_Routing_Table_Response */
+/* A_Read_Routing_Table_Response_PDU */
 
 bool
-A_Read_Routing_Table_Response_PDU::init (const CArray & c, TracePtr)
+A_Read_Routing_Table_Response_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() < 2)
     return false;
 
   data.set (c.data() + 2, c.size() - 2);
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -1611,31 +1689,34 @@ A_Read_Routing_Table_Response_PDU::ToPacket () const
 }
 
 std::string
-A_Read_Routing_Table_Response_PDU::Decode (TracePtr) const
+A_Read_Routing_Table_Response_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_Read_Routing_Table_Response");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_Read_Routing_Table_Response";
   C_ITER (i, data)
   addHex (s, *i);
   return s;
 }
 
-bool A_Read_Routing_Table_Response_PDU::isResponse (const APDU * req) const
+bool
+A_Read_Routing_Table_Response_PDU::isResponse (const APDU * req) const
 {
-  if (req->getType () != A_Read_Routing_Table_Request)
+  if (req->getAType () != A_Read_Routing_Table_Request)
     return false;
   return true;
 }
 
-/* A_Write_Routing_Table_Request */
+/* A_Write_Routing_Table_Request_PDU */
 
 bool
-A_Write_Routing_Table_Request_PDU::init (const CArray & c, TracePtr)
+A_Write_Routing_Table_Request_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() < 2)
     return false;
 
   data.set (c.data() + 2, c.size() - 2);
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -1650,29 +1731,32 @@ A_Write_Routing_Table_Request_PDU::ToPacket () const
 }
 
 std::string
-A_Write_Routing_Table_Request_PDU::Decode (TracePtr) const
+A_Write_Routing_Table_Request_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_Write_Routing_Table_Request");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_Write_Routing_Table_Request";
   C_ITER (i, data)
   addHex (s, *i);
   return s;
 }
 
-bool A_Write_Routing_Table_Request_PDU::isResponse (const APDU *) const
+bool
+A_Write_Routing_Table_Request_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_Read_Router_Memory_Request */
+/* A_Read_Router_Memory_Request_PDU */
 
 bool
-A_Read_Router_Memory_Request_PDU::init (const CArray & c, TracePtr)
+A_Read_Router_Memory_Request_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() < 2)
     return false;
 
   data.set (c.data() + 2, c.size() - 2);
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -1687,29 +1771,32 @@ A_Read_Router_Memory_Request_PDU::ToPacket () const
 }
 
 std::string
-A_Read_Router_Memory_Request_PDU::Decode (TracePtr) const
+A_Read_Router_Memory_Request_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_Read_Router_Memory_Request");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_Read_Router_Memory_Request";
   C_ITER (i, data)
   addHex (s, *i);
   return s;
 }
 
-bool A_Read_Router_Memory_Request_PDU::isResponse (const APDU *) const
+bool
+A_Read_Router_Memory_Request_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_Read_Router_Memory_Response */
+/* A_Read_Router_Memory_Response_PDU */
 
 bool
-A_Read_Router_Memory_Response_PDU::init (const CArray & c, TracePtr)
+A_Read_Router_Memory_Response_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() < 2)
     return false;
 
   data.set (c.data() + 2, c.size() - 2);
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -1724,31 +1811,34 @@ A_Read_Router_Memory_Response_PDU::ToPacket () const
 }
 
 std::string
-A_Read_Router_Memory_Response_PDU::Decode (TracePtr) const
+A_Read_Router_Memory_Response_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_Read_Router_Memory_Response");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_Read_Router_Memory_Response";
   C_ITER (i, data)
   addHex (s, *i);
   return s;
 }
 
-bool A_Read_Router_Memory_Response_PDU::isResponse (const APDU * req) const
+bool
+A_Read_Router_Memory_Response_PDU::isResponse (const APDU * req) const
 {
-  if (req->getType () != A_Read_Router_Memory_Request)
+  if (req->getAType () != A_Read_Router_Memory_Request)
     return false;
   return true;
 }
 
-/* A_Write_Router_Memory_Request */
+/* A_Write_Router_Memory_Request_PDU */
 
 bool
-A_Write_Router_Memory_Request_PDU::init (const CArray & c, TracePtr)
+A_Write_Router_Memory_Request_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() < 2)
     return false;
 
   data.set (c.data() + 2, c.size() - 2);
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -1763,29 +1853,32 @@ A_Write_Router_Memory_Request_PDU::ToPacket () const
 }
 
 std::string
-A_Write_Router_Memory_Request_PDU::Decode (TracePtr) const
+A_Write_Router_Memory_Request_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_Write_Router_Memory_Request");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_Write_Router_Memory_Request";
   C_ITER (i, data)
   addHex (s, *i);
   return s;
 }
 
-bool A_Write_Router_Memory_Request_PDU::isResponse (const APDU *) const
+bool
+A_Write_Router_Memory_Request_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_Read_Router_Status_Request */
+/* A_Read_Router_Status_Request_PDU */
 
 bool
-A_Read_Router_Status_Request_PDU::init (const CArray & c, TracePtr)
+A_Read_Router_Status_Request_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() < 2)
     return false;
 
   data.set (c.data() + 2, c.size() - 2);
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -1800,29 +1893,32 @@ A_Read_Router_Status_Request_PDU::ToPacket () const
 }
 
 std::string
-A_Read_Router_Status_Request_PDU::Decode (TracePtr) const
+A_Read_Router_Status_Request_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_Read_Router_Status_Request");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_Read_Router_Status_Request";
   C_ITER (i, data)
   addHex (s, *i);
   return s;
 }
 
-bool A_Read_Router_Status_Request_PDU::isResponse (const APDU *) const
+bool
+A_Read_Router_Status_Request_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_Read_Router_Status_Response */
+/* A_Read_Router_Status_Response_PDU */
 
 bool
-A_Read_Router_Status_Response_PDU::init (const CArray & c, TracePtr)
+A_Read_Router_Status_Response_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() < 2)
     return false;
 
   data.set (c.data() + 2, c.size() - 2);
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -1837,31 +1933,34 @@ A_Read_Router_Status_Response_PDU::ToPacket () const
 }
 
 std::string
-A_Read_Router_Status_Response_PDU::Decode (TracePtr) const
+A_Read_Router_Status_Response_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_Read_Router_Status_Response");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_Read_Router_Status_Response";
   C_ITER (i, data)
   addHex (s, *i);
   return s;
 }
 
-bool A_Read_Router_Status_Response_PDU::isResponse (const APDU * req) const
+bool
+A_Read_Router_Status_Response_PDU::isResponse (const APDU * req) const
 {
-  if (req->getType () != A_Read_Router_Status_Request)
+  if (req->getAType () != A_Read_Router_Status_Request)
     return false;
   return true;
 }
 
-/* A_Write_Router_Status_Request */
+/* A_Write_Router_Status_Request_PDU */
 
 bool
-A_Write_Router_Status_Request_PDU::init (const CArray & c, TracePtr)
+A_Write_Router_Status_Request_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() < 2)
     return false;
 
   data.set (c.data() + 2, c.size() - 2);
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -1876,23 +1975,26 @@ A_Write_Router_Status_Request_PDU::ToPacket () const
 }
 
 std::string
-A_Write_Router_Status_Request_PDU::Decode (TracePtr) const
+A_Write_Router_Status_Request_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_Write_Router_Status_Request");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_Write_Router_Status_Request";
   C_ITER (i, data)
   addHex (s, *i);
   return s;
 }
 
-bool A_Write_Router_Status_Request_PDU::isResponse (const APDU *) const
+bool
+A_Write_Router_Status_Request_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_MemoryBit_Write */
+/* A_MemoryBit_Write_PDU */
 
 bool
-A_MemoryBit_Write_PDU::init (const CArray & c, TracePtr)
+A_MemoryBit_Write_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() < 5)
     return false;
@@ -1903,7 +2005,7 @@ A_MemoryBit_Write_PDU::init (const CArray & c, TracePtr)
     return false;
   and_data.set (c.data() + 5, number);
   xor_data.set (c.data() + 5 + number, number);
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -1925,12 +2027,14 @@ A_MemoryBit_Write_PDU::ToPacket () const
 }
 
 std::string
-A_MemoryBit_Write_PDU::Decode (TracePtr) const
+A_MemoryBit_Write_PDU::decode (TracePtr tr) const
 {
   assert (and_data.size() == number);
   assert (xor_data.size() == number);
 
-  std::string s ("A_MemoryBit_Write Len:");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_MemoryBit_Write Len:";
   addHex (s, number);
   s += "Addr: ";
   add16Hex (s, address);
@@ -1943,21 +2047,22 @@ A_MemoryBit_Write_PDU::Decode (TracePtr) const
   return s;
 }
 
-bool A_MemoryBit_Write_PDU::isResponse (const APDU *) const
+bool
+A_MemoryBit_Write_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_Authorize_Request */
+/* A_Authorize_Request_PDU */
 
 bool
-A_Authorize_Request_PDU::init (const CArray & c, TracePtr)
+A_Authorize_Request_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() != 7)
     return false;
 
   key = (c[3] << 24) | (c[4] << 16) | (c[5] << 8) | c[6];
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -1976,27 +2081,31 @@ A_Authorize_Request_PDU::ToPacket () const
 }
 
 std::string
-A_Authorize_Request_PDU::Decode (TracePtr) const
+A_Authorize_Request_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_Authorize_Request Key:");
-  return s + FormatEIBKey (key);
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_Authorize_Request Key:";
+  s += FormatEIBKey (key);
+  return s;
 }
 
-bool A_Authorize_Request_PDU::isResponse (const APDU *) const
+bool
+A_Authorize_Request_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_Authorize_Response */
+/* A_Authorize_Response_PDU */
 
 bool
-A_Authorize_Response_PDU::init (const CArray & c, TracePtr)
+A_Authorize_Response_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() != 3)
     return false;
 
   level = c[2];
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -2011,31 +2120,34 @@ A_Authorize_Response_PDU::ToPacket () const
 }
 
 std::string
-A_Authorize_Response_PDU::Decode (TracePtr) const
+A_Authorize_Response_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_Authorize_Response Level:");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_Authorize_Response Level:";
   addHex (s, level);
   return s;
 }
 
-bool A_Authorize_Response_PDU::isResponse (const APDU * req) const
+bool
+A_Authorize_Response_PDU::isResponse (const APDU * req) const
 {
-  if (req->getType () != A_Authorize_Request)
+  if (req->getAType () != A_Authorize_Request)
     return false;
   return true;
 }
 
-/* A_Key_Write */
+/* A_Key_Write_PDU */
 
 bool
-A_Key_Write_PDU::init (const CArray & c, TracePtr)
+A_Key_Write_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() != 7)
     return false;
 
   level = c[2];
   key = (c[3] << 24) | (c[4] << 16) | (c[5] << 8) | c[6];
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -2054,29 +2166,33 @@ A_Key_Write_PDU::ToPacket () const
 }
 
 std::string
-A_Key_Write_PDU::Decode (TracePtr) const
+A_Key_Write_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_Key_Write Level:");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_Key_Write Level:";
   addHex (s, level);
   s += " Key: ";
-  return s + FormatEIBKey (key);
+  s += FormatEIBKey (key);
+  return s;
 }
 
-bool A_Key_Write_PDU::isResponse (const APDU *) const
+bool
+A_Key_Write_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_Key_Response */
+/* A_Key_Response_PDU */
 
 bool
-A_Key_Response_PDU::init (const CArray & c, TracePtr)
+A_Key_Response_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() != 3)
     return false;
 
   level = c[2];
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -2091,26 +2207,29 @@ A_Key_Response_PDU::ToPacket () const
 }
 
 std::string
-A_Key_Response_PDU::Decode (TracePtr) const
+A_Key_Response_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_Key_Response Level:");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_Key_Response Level:";
   addHex (s, level);
   return s;
 }
 
-bool A_Key_Response_PDU::isResponse (const APDU * req) const
+bool
+A_Key_Response_PDU::isResponse (const APDU * req) const
 {
-  if (req->getType () != A_Key_Write)
+  if (req->getAType () != A_Key_Write)
     return false;
   const A_Key_Write_PDU *
   a = (const A_Key_Write_PDU *) req;
   return a->level == level;
 }
 
-/* A_PropertyValue_Read */
+/* A_PropertyValue_Read_PDU */
 
 bool
-A_PropertyValue_Read_PDU::init (const CArray & c, TracePtr)
+A_PropertyValue_Read_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() != 6)
     return false;
@@ -2119,7 +2238,7 @@ A_PropertyValue_Read_PDU::init (const CArray & c, TracePtr)
   property_id = c[3];
   nr_of_elem = c[4] >> 4;
   start_index = (c[4] & 0x0f) << 8 | c[5];
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -2140,12 +2259,14 @@ A_PropertyValue_Read_PDU::ToPacket () const
 }
 
 std::string
-A_PropertyValue_Read_PDU::Decode (TracePtr) const
+A_PropertyValue_Read_PDU::decode (TracePtr tr) const
 {
   assert ((nr_of_elem & 0xf0) == 0);
   assert ((start_index & 0xf000) == 0);
 
-  std::string s ("A_PropertyValue_Read Obj:");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_PropertyValue_Read Obj:";
   addHex (s, object_index);
   s += " Prop: ";
   addHex (s, property_id);
@@ -2156,15 +2277,16 @@ A_PropertyValue_Read_PDU::Decode (TracePtr) const
   return s;
 }
 
-bool A_PropertyValue_Read_PDU::isResponse (const APDU *) const
+bool
+A_PropertyValue_Read_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_PropertyValue_Response */
+/* A_PropertyValue_Response_PDU */
 
 bool
-A_PropertyValue_Response_PDU::init (const CArray & c, TracePtr)
+A_PropertyValue_Response_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() < 6)
     return false;
@@ -2174,7 +2296,7 @@ A_PropertyValue_Response_PDU::init (const CArray & c, TracePtr)
   nr_of_elem = c[4] >> 4;
   start_index = ((c[4] & 0x0f) << 8) | c[5];
   data.set (c.data() + 6, c.size() - 6);
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -2196,12 +2318,14 @@ A_PropertyValue_Response_PDU::ToPacket () const
 }
 
 std::string
-A_PropertyValue_Response_PDU::Decode (TracePtr) const
+A_PropertyValue_Response_PDU::decode (TracePtr tr) const
 {
   assert ((nr_of_elem & 0xf0) == 0);
   assert ((start_index & 0xf000) == 0);
 
-  std::string s ("A_PropertyValue_Response Obj:");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_PropertyValue_Response Obj:";
   addHex (s, object_index);
   s += " Prop: ";
   addHex (s, property_id);
@@ -2215,9 +2339,10 @@ A_PropertyValue_Response_PDU::Decode (TracePtr) const
   return s;
 }
 
-bool A_PropertyValue_Response_PDU::isResponse (const APDU * req) const
+bool
+A_PropertyValue_Response_PDU::isResponse (const APDU * req) const
 {
-  if (req->getType () == A_PropertyValue_Write)
+  if (req->getAType () == A_PropertyValue_Write)
     {
       const A_PropertyValue_Write_PDU *
       a = (const A_PropertyValue_Write_PDU *) req;
@@ -2231,7 +2356,7 @@ bool A_PropertyValue_Response_PDU::isResponse (const APDU * req) const
         return false;
       return true;
     }
-  if (req->getType () == A_PropertyValue_Read)
+  if (req->getAType () == A_PropertyValue_Read)
     {
       const A_PropertyValue_Read_PDU *
       a = (const A_PropertyValue_Read_PDU *) req;
@@ -2248,10 +2373,10 @@ bool A_PropertyValue_Response_PDU::isResponse (const APDU * req) const
   return false;
 }
 
-/* A_PropertyValue_Write */
+/* A_PropertyValue_Write_PDU */
 
 bool
-A_PropertyValue_Write_PDU::init (const CArray & c, TracePtr)
+A_PropertyValue_Write_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() < 6)
     return false;
@@ -2261,7 +2386,7 @@ A_PropertyValue_Write_PDU::init (const CArray & c, TracePtr)
   nr_of_elem = c[4] >> 4;
   start_index = ((c[4] & 0x0f) << 8) | c[5];
   data.set (c.data() + 6, c.size() - 6);
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -2283,12 +2408,14 @@ A_PropertyValue_Write_PDU::ToPacket () const
 }
 
 std::string
-A_PropertyValue_Write_PDU::Decode (TracePtr) const
+A_PropertyValue_Write_PDU::decode (TracePtr tr) const
 {
   assert ((nr_of_elem & 0xf0) == 0);
   assert ((start_index & 0xf000) == 0);
 
-  std::string s ("A_PropertyValue_Write Obj:");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_PropertyValue_Write Obj:";
   addHex (s, object_index);
   s += " Prop: ";
   addHex (s, property_id);
@@ -2302,15 +2429,16 @@ A_PropertyValue_Write_PDU::Decode (TracePtr) const
   return s;
 }
 
-bool A_PropertyValue_Write_PDU::isResponse (const APDU *) const
+bool
+A_PropertyValue_Write_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_PropertyDescription_Read */
+/* A_PropertyDescription_Read_PDU */
 
 bool
-A_PropertyDescription_Read_PDU::init (const CArray & c, TracePtr)
+A_PropertyDescription_Read_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() != 5)
     return false;
@@ -2318,7 +2446,7 @@ A_PropertyDescription_Read_PDU::init (const CArray & c, TracePtr)
   object_index = c[2];
   property_id = c[3];
   property_index = c[4];
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -2335,9 +2463,11 @@ A_PropertyDescription_Read_PDU::ToPacket () const
 }
 
 std::string
-A_PropertyDescription_Read_PDU::Decode (TracePtr) const
+A_PropertyDescription_Read_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_PropertyDescription_Read Obj: ");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_PropertyDescription_Read Obj: ";
   addHex (s, object_index);
   s += " Property: ";
   addHex (s, property_id);
@@ -2346,15 +2476,16 @@ A_PropertyDescription_Read_PDU::Decode (TracePtr) const
   return s;
 }
 
-bool A_PropertyDescription_Read_PDU::isResponse (const APDU *) const
+bool
+A_PropertyDescription_Read_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_PropertyDescription_Response */
+/* A_PropertyDescription_Response_PDU */
 
 bool
-A_PropertyDescription_Response_PDU::init (const CArray & c, TracePtr)
+A_PropertyDescription_Response_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() != 9)
     return false;
@@ -2366,7 +2497,7 @@ A_PropertyDescription_Response_PDU::init (const CArray & c, TracePtr)
   type = c[5] & 0x3f;
   max_nr_of_elem = ((c[6] & 0x0f) << 8) | c[7];
   access = c[8];
-  return true;
+  return T_Data_Connected_PDU::init(c, tr);
 }
 
 CArray
@@ -2387,9 +2518,11 @@ A_PropertyDescription_Response_PDU::ToPacket () const
 }
 
 std::string
-A_PropertyDescription_Response_PDU::Decode (TracePtr) const
+A_PropertyDescription_Response_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_PropertyDescription_Response Obj:");
+  std::string s;
+  s = T_Data_Connected_PDU::decode(tr);
+  s += " A_PropertyDescription_Response Obj:";
   addHex (s, object_index);
   s += " Property: ";
   addHex (s, property_id);
@@ -2405,9 +2538,10 @@ A_PropertyDescription_Response_PDU::Decode (TracePtr) const
   return s;
 }
 
-bool A_PropertyDescription_Response_PDU::isResponse (const APDU * req) const
+bool
+A_PropertyDescription_Response_PDU::isResponse (const APDU * req) const
 {
-  if (req->getType () != A_PropertyDescription_Read)
+  if (req->getAType () != A_PropertyDescription_Read)
     return false;
   const A_PropertyDescription_Read_PDU *
   a = (const A_PropertyDescription_Read_PDU *) req;
@@ -2416,17 +2550,17 @@ bool A_PropertyDescription_Response_PDU::isResponse (const APDU * req) const
   return true;
 }
 
-/* A_NetworkParameter_Read */
+/* A_NetworkParameter_Read_PDU */
 
 bool
-A_NetworkParameter_Read_PDU::init (const CArray & c, TracePtr)
+A_NetworkParameter_Read_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() < 5)
     return false;
 
   parameter_type.set (c.data() + 2, 3);
   test_info.set (c.data() + 5, c.size() - 5);
-  return true;
+  return T_Data_Broadcast_PDU::init(c, tr);
 }
 
 CArray
@@ -2442,29 +2576,32 @@ A_NetworkParameter_Read_PDU::ToPacket () const
 }
 
 std::string
-A_NetworkParameter_Read_PDU::Decode (TracePtr) const
+A_NetworkParameter_Read_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_NetworkParameter_Read");
+  std::string s;
+  s = T_Data_Broadcast_PDU::decode(tr);
+  s += " A_NetworkParameter_Read";
   // @todo
   return s;
 }
 
-bool A_NetworkParameter_Read_PDU::isResponse (const APDU *) const
+bool
+A_NetworkParameter_Read_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_NetworkParameter_Response */
+/* A_NetworkParameter_Response_PDU */
 
 bool
-A_NetworkParameter_Response_PDU::init (const CArray & c, TracePtr)
+A_NetworkParameter_Response_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() != 16)
     return false;
 
   parameter_type.set (c.data() + 2, 3);
   test_info_result.set (c.data() + 5, c.size() - 5);
-  return true;
+  return T_Data_Broadcast_PDU::init(c, tr);
 }
 
 CArray
@@ -2480,16 +2617,19 @@ A_NetworkParameter_Response_PDU::ToPacket () const
 }
 
 std::string
-A_NetworkParameter_Response_PDU::Decode (TracePtr) const
+A_NetworkParameter_Response_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_NetworkParameter_Response");
+  std::string s;
+  s = T_Data_Broadcast_PDU::decode(tr);
+  s += " A_NetworkParameter_Response";
   // @todo
   return s;
 }
 
-bool A_NetworkParameter_Response_PDU::isResponse (const APDU * req) const
+bool
+A_NetworkParameter_Response_PDU::isResponse (const APDU * req) const
 {
-  if (req->getType () != A_NetworkParameter_Read)
+  if (req->getAType () != A_NetworkParameter_Read)
     return false;
   const A_NetworkParameter_Read_PDU *
   a = (const A_NetworkParameter_Read_PDU *) req;
@@ -2499,7 +2639,7 @@ bool A_NetworkParameter_Response_PDU::isResponse (const APDU * req) const
   return true;
 }
 
-/* A_IndividualAddressSerialNumber_Read */
+/* A_IndividualAddressSerialNumber_Read_PDU */
 
 A_IndividualAddressSerialNumber_Read_PDU::
 A_IndividualAddressSerialNumber_Read_PDU ()
@@ -2508,16 +2648,17 @@ A_IndividualAddressSerialNumber_Read_PDU ()
 }
 
 bool
-A_IndividualAddressSerialNumber_Read_PDU::init (const CArray & c, TracePtr)
+A_IndividualAddressSerialNumber_Read_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() != 8)
     return false;
 
   std::copy(c.begin() + 2, c.begin() + 8, serial_number.begin());
-  return true;
+  return T_Data_Broadcast_PDU::init(c, tr);
 }
 
-CArray A_IndividualAddressSerialNumber_Read_PDU::ToPacket () const
+CArray
+A_IndividualAddressSerialNumber_Read_PDU::ToPacket () const
 {
   CArray pdu;
   pdu.resize (8);
@@ -2527,10 +2668,12 @@ CArray A_IndividualAddressSerialNumber_Read_PDU::ToPacket () const
   return pdu;
 }
 
-std::string A_IndividualAddressSerialNumber_Read_PDU::Decode (TracePtr) const
+std::string
+A_IndividualAddressSerialNumber_Read_PDU::decode (TracePtr tr) const
 {
-  std::string
-  s ("A_IndividualAddressSerialNumber_Read ");
+  std::string s;
+  s = T_Data_Broadcast_PDU::decode(tr);
+  s += " A_IndividualAddressSerialNumber_Read ";
   addHex (s, serial_number[0]);
   addHex (s, serial_number[1]);
   addHex (s, serial_number[2]);
@@ -2547,7 +2690,7 @@ const
   return false;
 }
 
-/* A_IndividualAddressSerialNumber_Response */
+/* A_IndividualAddressSerialNumber_Response_PDU */
 
 A_IndividualAddressSerialNumber_Response_PDU::
 A_IndividualAddressSerialNumber_Response_PDU ()
@@ -2556,7 +2699,7 @@ A_IndividualAddressSerialNumber_Response_PDU ()
 }
 
 bool
-A_IndividualAddressSerialNumber_Response_PDU::init (const CArray & c, TracePtr)
+A_IndividualAddressSerialNumber_Response_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() != 12)
     return false;
@@ -2564,10 +2707,11 @@ A_IndividualAddressSerialNumber_Response_PDU::init (const CArray & c, TracePtr)
   std::copy(c.begin() + 2, c.begin() + 8, serial_number.begin());
   domain_address = (c[8] << 8) | (c[9]);
   reserved.set (c.data() + 10, 2);
-  return true;
+  return T_Data_Broadcast_PDU::init(c, tr);
 }
 
-CArray A_IndividualAddressSerialNumber_Response_PDU::ToPacket () const
+CArray
+A_IndividualAddressSerialNumber_Response_PDU::ToPacket () const
 {
   CArray pdu;
   pdu.resize (12);
@@ -2581,10 +2725,12 @@ CArray A_IndividualAddressSerialNumber_Response_PDU::ToPacket () const
   return pdu;
 }
 
-std::string A_IndividualAddressSerialNumber_Response_PDU::Decode (TracePtr) const
+std::string
+A_IndividualAddressSerialNumber_Response_PDU::decode (TracePtr tr) const
 {
-  std::string
-  s ("A_IndividualAddressSerialNumber_Response ");
+  std::string s;
+  s = T_Data_Broadcast_PDU::decode(tr);
+  s += " A_IndividualAddressSerialNumber_Response ";
   addHex (s, serial_number[0]);
   addHex (s, serial_number[1]);
   addHex (s, serial_number[2]);
@@ -2599,7 +2745,7 @@ std::string A_IndividualAddressSerialNumber_Response_PDU::Decode (TracePtr) cons
 bool
 A_IndividualAddressSerialNumber_Response_PDU::isResponse (const APDU * req) const
 {
-  if (req->getType () != A_IndividualAddressSerialNumber_Read)
+  if (req->getAType () != A_IndividualAddressSerialNumber_Read)
     return false;
   const A_IndividualAddressSerialNumber_Read_PDU *a =
     (const A_IndividualAddressSerialNumber_Read_PDU *) req;
@@ -2608,7 +2754,7 @@ A_IndividualAddressSerialNumber_Response_PDU::isResponse (const APDU * req) cons
   return true;
 }
 
-/* A_IndividualAddressSerialNumber_Write */
+/* A_IndividualAddressSerialNumber_Write_PDU */
 
 A_IndividualAddressSerialNumber_Write_PDU::
 A_IndividualAddressSerialNumber_Write_PDU ()
@@ -2616,7 +2762,8 @@ A_IndividualAddressSerialNumber_Write_PDU ()
   serial_number.fill(0);
 }
 
-bool A_IndividualAddressSerialNumber_Write_PDU::init (const CArray & c, TracePtr)
+bool
+A_IndividualAddressSerialNumber_Write_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() != 14)
     return false;
@@ -2624,10 +2771,11 @@ bool A_IndividualAddressSerialNumber_Write_PDU::init (const CArray & c, TracePtr
   std::copy(c.begin() + 2, c.begin() + 8, serial_number.begin());
   newaddress = (c[8] << 8) | (c[9]);
   reserved.set (c.data() + 10, 4);
-  return true;
+  return T_Data_Broadcast_PDU::init(c, tr);
 }
 
-CArray A_IndividualAddressSerialNumber_Write_PDU::ToPacket () const
+CArray
+A_IndividualAddressSerialNumber_Write_PDU::ToPacket () const
 {
   CArray pdu;
   pdu.resize (14);
@@ -2643,10 +2791,12 @@ CArray A_IndividualAddressSerialNumber_Write_PDU::ToPacket () const
   return pdu;
 }
 
-std::string A_IndividualAddressSerialNumber_Write_PDU::Decode (TracePtr) const
+std::string
+A_IndividualAddressSerialNumber_Write_PDU::decode (TracePtr tr) const
 {
-  std::string
-  s ("A_IndividualAddressSerialNumber_Write ");
+  std::string s;
+  s = T_Data_Broadcast_PDU::decode(tr);
+  s += " A_IndividualAddressSerialNumber_Write ";
   addHex (s, serial_number[0]);
   addHex (s, serial_number[1]);
   addHex (s, serial_number[2]);
@@ -2668,7 +2818,7 @@ const
 /* A_ServiceInformation_Indication_Write_PDU */
 
 bool
-A_ServiceInformation_Indication_Write_PDU::init (const CArray & c, TracePtr)
+A_ServiceInformation_Indication_Write_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() != 5)
     return false;
@@ -2676,7 +2826,7 @@ A_ServiceInformation_Indication_Write_PDU::init (const CArray & c, TracePtr)
   verify_mode = (c[2] & 0x04) ? true : false;
   duplicate_address = (c[3] & 0x02) ? true : false;
   appl_stopped = (c[2] & 0x01) ? true : false;
-  return true;
+  return T_Data_Broadcast_PDU::init(c, tr);
 }
 
 CArray
@@ -2693,39 +2843,40 @@ A_ServiceInformation_Indication_Write_PDU::ToPacket () const
 }
 
 std::string
-A_ServiceInformation_Indication_Write_PDU::Decode (TracePtr) const
+A_ServiceInformation_Indication_Write_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_ServiceInformation_Indication_Write ");
+  std::string s;
+  s = T_Data_Broadcast_PDU::decode(tr);
+  s += " A_ServiceInformation_Indication_Write ";
   if (verify_mode)
     s += "verify ";
   if (duplicate_address)
     s += "dupplicate_address ";
   if (appl_stopped)
     s += "appl_stopped ";
-
   return s;
 }
 
 bool
-A_ServiceInformation_Indication_Write_PDU::isResponse (const APDU *)
-const
+A_ServiceInformation_Indication_Write_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_DomainAddress_Write */
+/* A_DomainAddress_Write_PDU */
 
 bool
-A_DomainAddress_Write_PDU::init (const CArray & c, TracePtr)
+A_DomainAddress_Write_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() != 4)
     return false;
 
   domain_address = (c[2] << 8) | (c[3]);
-  return true;
+  return T_Data_Broadcast_PDU::init(c, tr);
 }
 
-CArray A_DomainAddress_Write_PDU::ToPacket () const
+CArray
+A_DomainAddress_Write_PDU::ToPacket () const
 {
   CArray pdu;
   pdu.resize (4);
@@ -2736,29 +2887,36 @@ CArray A_DomainAddress_Write_PDU::ToPacket () const
   return pdu;
 }
 
-std::string A_DomainAddress_Write_PDU::Decode (TracePtr) const
+std::string
+A_DomainAddress_Write_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_DomainAddress_Write ");
-  return s + FormatDomainAddr (domain_address);
+  std::string s;
+  s = T_Data_Broadcast_PDU::decode(tr);
+  s += " A_DomainAddress_Write ";
+  s += FormatDomainAddr (domain_address);
+  return s;
 }
 
 
-bool A_DomainAddress_Write_PDU::isResponse (const APDU *) const
+bool
+A_DomainAddress_Write_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_DomainAddress_Read */
+/* A_DomainAddress_Read_PDU */
 
 bool
-A_DomainAddress_Read_PDU::init (const CArray & c, TracePtr)
+A_DomainAddress_Read_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() != 2)
     return false;
-  return true;
+
+  return T_Data_Broadcast_PDU::init(c, tr);
 }
 
-CArray A_DomainAddress_Read_PDU::ToPacket () const
+CArray
+A_DomainAddress_Read_PDU::ToPacket () const
 {
   CArray pdu;
   pdu.resize(2);
@@ -2767,29 +2925,35 @@ CArray A_DomainAddress_Read_PDU::ToPacket () const
   return pdu;
 }
 
-std::string A_DomainAddress_Read_PDU::Decode (TracePtr) const
+std::string
+A_DomainAddress_Read_PDU::decode (TracePtr tr) const
 {
-  return "A_DomainAddress_Read";
+  std::string s;
+  s = T_Data_Broadcast_PDU::decode(tr);
+  s += " A_DomainAddress_Read";
+  return s;
 }
 
-bool A_DomainAddress_Read_PDU::isResponse (const APDU *) const
+bool
+A_DomainAddress_Read_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_DomainAddress_Response */
+/* A_DomainAddress_Response_PDU */
 
 bool
-A_DomainAddress_Response_PDU::init (const CArray & c, TracePtr)
+A_DomainAddress_Response_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() != 4)
     return false;
 
   domain_address = (c[2] << 8) | c[3];
-  return true;
+  return T_Data_Broadcast_PDU::init(c, tr);
 }
 
-CArray A_DomainAddress_Response_PDU::ToPacket () const
+CArray
+A_DomainAddress_Response_PDU::ToPacket () const
 {
   CArray pdu;
   pdu.resize (4);
@@ -2800,24 +2964,28 @@ CArray A_DomainAddress_Response_PDU::ToPacket () const
   return pdu;
 }
 
-std::string A_DomainAddress_Response_PDU::Decode (TracePtr) const
+std::string
+A_DomainAddress_Response_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_DomainAddress_Response");
+  std::string s;
+  s = T_Data_Broadcast_PDU::decode(tr);
+  s += " A_DomainAddress_Response";
   s += FormatDomainAddr (domain_address);
   return s;
 }
 
-bool A_DomainAddress_Response_PDU::isResponse (const APDU * req) const
+bool
+A_DomainAddress_Response_PDU::isResponse (const APDU * req) const
 {
-  if (req->getType () != A_DomainAddress_Read)
+  if (req->getAType () != A_DomainAddress_Read)
     return false;
   return true;
 }
 
-/* A_DomainAddressSelective_Read */
+/* A_DomainAddressSelective_Read_PDU */
 
 bool
-A_DomainAddressSelective_Read_PDU::init (const CArray & c, TracePtr)
+A_DomainAddressSelective_Read_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() != 7)
     return false;
@@ -2825,10 +2993,11 @@ A_DomainAddressSelective_Read_PDU::init (const CArray & c, TracePtr)
   domain_address = (c[2] << 8) | c[3];
   start_address = (c[4] << 8) | c[5];
   range = c[6];
-  return true;
+  return T_Data_Broadcast_PDU::init(c, tr);
 }
 
-CArray A_DomainAddressSelective_Read_PDU::ToPacket () const
+CArray
+A_DomainAddressSelective_Read_PDU::ToPacket () const
 {
   CArray pdu;
   pdu.resize (7);
@@ -2843,9 +3012,11 @@ CArray A_DomainAddressSelective_Read_PDU::ToPacket () const
 }
 
 std::string
-A_DomainAddressSelective_Read_PDU::Decode (TracePtr) const
+A_DomainAddressSelective_Read_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_DomainAddressSelective_Read ");
+  std::string s;
+  s = T_Data_Broadcast_PDU::decode(tr);
+  s += " A_DomainAddressSelective_Read ";
   s += FormatDomainAddr (domain_address);
   s += " ";
   s += FormatEIBAddr (start_address);
@@ -2854,22 +3025,23 @@ A_DomainAddressSelective_Read_PDU::Decode (TracePtr) const
   return s;
 }
 
-bool A_DomainAddressSelective_Read_PDU::isResponse (const APDU *) const
+bool
+A_DomainAddressSelective_Read_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_NetworkParameter_Write */
+/* A_NetworkParameter_Write_PDU */
 
 bool
-A_NetworkParameter_Write_PDU::init (const CArray & c, TracePtr)
+A_NetworkParameter_Write_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() < 5)
     return false;
 
   parameter_type.set (c.data() + 2, 3);
   value.set (c.data() + 5, c.size() - 5);
-  return true;
+  return T_Data_Broadcast_PDU::init(c, tr);
 }
 
 CArray
@@ -2885,29 +3057,32 @@ A_NetworkParameter_Write_PDU::ToPacket () const
 }
 
 std::string
-A_NetworkParameter_Write_PDU::Decode (TracePtr) const
+A_NetworkParameter_Write_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_NetworkParameter_Write");
+  std::string s;
+  s = T_Data_Broadcast_PDU::decode(tr);
+  s += " A_NetworkParameter_Write";
   // @todo
   return s;
 }
 
-bool A_NetworkParameter_Write_PDU::isResponse (const APDU *) const
+bool
+A_NetworkParameter_Write_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_Link_Read */
+/* A_Link_Read_PDU */
 
 bool
-A_Link_Read_PDU::init (const CArray & c, TracePtr)
+A_Link_Read_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() != 4)
     return false;
 
   group_object_number = c[2];
   start_index = c[3] & 0x0f;
-  return true;
+  return T_Data_Individual_PDU::init(c, tr);
 }
 
 CArray
@@ -2923,22 +3098,25 @@ A_Link_Read_PDU::ToPacket () const
 }
 
 std::string
-A_Link_Read_PDU::Decode (TracePtr) const
+A_Link_Read_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_Link_Read");
+  std::string s;
+  s = T_Data_Individual_PDU::decode(tr);
+  s += " A_Link_Read";
   // @todo
   return s;
 }
 
-bool A_Link_Read_PDU::isResponse (const APDU *) const
+bool
+A_Link_Read_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_Link_Response */
+/* A_Link_Response_PDU */
 
 bool
-A_Link_Response_PDU::init (const CArray & c, TracePtr)
+A_Link_Response_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() < 4)
     return false;
@@ -2947,7 +3125,7 @@ A_Link_Response_PDU::init (const CArray & c, TracePtr)
   sending_address = c[3] >> 4;
   start_index = c[3] & 0x0f;
   group_address_list.set (c.data() + 4, c.size() - 4);
-  return true;
+  return T_Data_Individual_PDU::init(c, tr);
 }
 
 CArray
@@ -2964,16 +3142,19 @@ A_Link_Response_PDU::ToPacket () const
 }
 
 std::string
-A_Link_Response_PDU::Decode (TracePtr) const
+A_Link_Response_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_Link_Response");
+  std::string s;
+  s = T_Data_Individual_PDU::decode(tr);
+  s += " A_Link_Response";
   // @todo
   return s;
 }
 
-bool A_Link_Response_PDU::isResponse (const APDU * req) const
+bool
+A_Link_Response_PDU::isResponse (const APDU * req) const
 {
-  if (req->getType () != A_Link_Read)
+  if (req->getAType () != A_Link_Read)
     return false;
   const A_Link_Read_PDU * a =
     (const A_Link_Read_PDU *) req;
@@ -2984,10 +3165,10 @@ bool A_Link_Response_PDU::isResponse (const APDU * req) const
   return true;
 }
 
-/* A_Link_Write */
+/* A_Link_Write_PDU */
 
 bool
-A_Link_Write_PDU::init (const CArray & c, TracePtr)
+A_Link_Write_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() != 6)
     return false;
@@ -2995,7 +3176,7 @@ A_Link_Write_PDU::init (const CArray & c, TracePtr)
   group_object_number = c[2];
   flags = c[3] & 0x03;
   group_address = (c[4] << 8) | c[5];
-  return true;
+  return T_Data_Individual_PDU::init(c, tr);
 }
 
 CArray
@@ -3013,25 +3194,28 @@ A_Link_Write_PDU::ToPacket () const
 }
 
 std::string
-A_Link_Write_PDU::Decode (TracePtr) const
+A_Link_Write_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_Link_Write");
+  std::string s;
+  s = T_Data_Individual_PDU::decode(tr);
+  s += " A_Link_Write";
   // @todo
   return s;
 }
 
-bool A_Link_Write_PDU::isResponse (const APDU *) const
+bool
+A_Link_Write_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_GroupPropValue_Read */
+/* A_GroupPropValue_Read_PDU */
 
 bool
-A_GroupPropValue_Read_PDU::init (const CArray &, TracePtr)
+A_GroupPropValue_Read_PDU::init (const CArray & c, TracePtr tr)
 {
   // @todo
-  return true;
+  return T_Data_Group_PDU::init(c, tr);
 }
 
 CArray
@@ -3046,25 +3230,28 @@ A_GroupPropValue_Read_PDU::ToPacket () const
 }
 
 std::string
-A_GroupPropValue_Read_PDU::Decode (TracePtr) const
+A_GroupPropValue_Read_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_GroupPropValue_Read");
+  std::string s;
+  s = T_Data_Group_PDU::decode(tr);
+  s += " A_GroupPropValue_Read";
   // @todo
   return s;
 }
 
-bool A_GroupPropValue_Read_PDU::isResponse (const APDU *) const
+bool
+A_GroupPropValue_Read_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_GroupPropValue_Response */
+/* A_GroupPropValue_Response_PDU */
 
 bool
-A_GroupPropValue_Response_PDU::init (const CArray &, TracePtr)
+A_GroupPropValue_Response_PDU::init (const CArray & c, TracePtr tr)
 {
   // @todo
-  return true;
+  return T_Data_Group_PDU::init(c, tr);
 }
 
 CArray
@@ -3079,28 +3266,31 @@ A_GroupPropValue_Response_PDU::ToPacket () const
 }
 
 std::string
-A_GroupPropValue_Response_PDU::Decode (TracePtr) const
+A_GroupPropValue_Response_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_GroupPropValue_Response");
+  std::string s;
+  s = T_Data_Group_PDU::decode(tr);
+  s += " A_GroupPropValue_Response";
   // @todo
   return s;
 }
 
-bool A_GroupPropValue_Response_PDU::isResponse (const APDU * req) const
+bool
+A_GroupPropValue_Response_PDU::isResponse (const APDU * req) const
 {
-  if (req->getType () != A_GroupPropValue_Read)
+  if (req->getAType () != A_GroupPropValue_Read)
     return false;
   // @todo
   return true;
 }
 
-/* A_GroupPropValue_Write */
+/* A_GroupPropValue_Write_PDU */
 
 bool
-A_GroupPropValue_Write_PDU::init (const CArray &, TracePtr)
+A_GroupPropValue_Write_PDU::init (const CArray & c, TracePtr tr)
 {
   // @todo
-  return true;
+  return T_Data_Group_PDU::init(c, tr);
 }
 
 CArray
@@ -3115,25 +3305,28 @@ A_GroupPropValue_Write_PDU::ToPacket () const
 }
 
 std::string
-A_GroupPropValue_Write_PDU::Decode (TracePtr) const
+A_GroupPropValue_Write_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_GroupPropValue_Write");
+  std::string s;
+  s = T_Data_Group_PDU::decode(tr);
+  s += " A_GroupPropValue_Write";
   // @todo
   return s;
 }
 
-bool A_GroupPropValue_Write_PDU::isResponse (const APDU *) const
+bool
+A_GroupPropValue_Write_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_GroupPropValue_InfoReport */
+/* A_GroupPropValue_InfoReport_PDU */
 
 bool
-A_GroupPropValue_InfoReport_PDU::init (const CArray &, TracePtr)
+A_GroupPropValue_InfoReport_PDU::init (const CArray & c, TracePtr tr)
 {
   // @todo
-  return true;
+  return T_Data_Group_PDU::init(c, tr);
 }
 
 CArray
@@ -3148,26 +3341,29 @@ A_GroupPropValue_InfoReport_PDU::ToPacket () const
 }
 
 std::string
-A_GroupPropValue_InfoReport_PDU::Decode (TracePtr) const
+A_GroupPropValue_InfoReport_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_GroupPropValue_InfoReport");
+  std::string s;
+  s = T_Data_Group_PDU::decode(tr);
+  s += " A_GroupPropValue_InfoReport";
   // @todo
   return s;
 }
 
-bool A_GroupPropValue_InfoReport_PDU::isResponse (const APDU *) const
+bool
+A_GroupPropValue_InfoReport_PDU::isResponse (const APDU *) const
 {
   // @todo
   return false;
 }
 
-/* A_DomainAddressSerialNumber_Read */
+/* A_DomainAddressSerialNumber_Read_PDU */
 
 bool
-A_DomainAddressSerialNumber_Read_PDU::init (const CArray &, TracePtr)
+A_DomainAddressSerialNumber_Read_PDU::init (const CArray & c, TracePtr tr)
 {
   // @todo
-  return true;
+  return T_Data_Broadcast_PDU::init(c, tr);
 }
 
 CArray
@@ -3182,25 +3378,28 @@ A_DomainAddressSerialNumber_Read_PDU::ToPacket () const
 }
 
 std::string
-A_DomainAddressSerialNumber_Read_PDU::Decode (TracePtr) const
+A_DomainAddressSerialNumber_Read_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_DomainAddressSerialNumber_Read");
+  std::string s;
+  s = T_Data_Broadcast_PDU::decode(tr);
+  s += " A_DomainAddressSerialNumber_Read";
   // @todo
   return s;
 }
 
-bool A_DomainAddressSerialNumber_Read_PDU::isResponse (const APDU *) const
+bool
+A_DomainAddressSerialNumber_Read_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_DomainAddressSerialNumber_Response */
+/* A_DomainAddressSerialNumber_Response_PDU */
 
 bool
-A_DomainAddressSerialNumber_Response_PDU::init (const CArray &, TracePtr)
+A_DomainAddressSerialNumber_Response_PDU::init (const CArray & c, TracePtr tr)
 {
   // @todo
-  return true;
+  return T_Data_Broadcast_PDU::init(c, tr);
 }
 
 CArray
@@ -3215,28 +3414,31 @@ A_DomainAddressSerialNumber_Response_PDU::ToPacket () const
 }
 
 std::string
-A_DomainAddressSerialNumber_Response_PDU::Decode (TracePtr) const
+A_DomainAddressSerialNumber_Response_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_DomainAddressSerialNumber_Response");
+  std::string s;
+  s = T_Data_Broadcast_PDU::decode(tr);
+  s += " A_DomainAddressSerialNumber_Response";
   // @todo
   return s;
 }
 
-bool A_DomainAddressSerialNumber_Response_PDU::isResponse (const APDU * req) const
+bool
+A_DomainAddressSerialNumber_Response_PDU::isResponse (const APDU * req) const
 {
-  if (req->getType () != A_DomainAddressSerialNumber_Read)
+  if (req->getAType () != A_DomainAddressSerialNumber_Read)
     return false;
   // @todo
   return true;
 }
 
-/* A_DomainAddressSerialNumber_Write */
+/* A_DomainAddressSerialNumber_Write_PDU */
 
 bool
-A_DomainAddressSerialNumber_Write_PDU::init (const CArray &, TracePtr)
+A_DomainAddressSerialNumber_Write_PDU::init (const CArray & c, TracePtr tr)
 {
   // @todo
-  return true;
+  return T_Data_Broadcast_PDU::init(c, tr);
 }
 
 CArray
@@ -3251,22 +3453,25 @@ A_DomainAddressSerialNumber_Write_PDU::ToPacket () const
 }
 
 std::string
-A_DomainAddressSerialNumber_Write_PDU::Decode (TracePtr) const
+A_DomainAddressSerialNumber_Write_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_DomainAddressSerialNumber_Write");
+  std::string s;
+  s = T_Data_Broadcast_PDU::decode(tr);
+  s += " A_DomainAddressSerialNumber_Write";
   // @todo
   return s;
 }
 
-bool A_DomainAddressSerialNumber_Write_PDU::isResponse (const APDU *) const
+bool
+A_DomainAddressSerialNumber_Write_PDU::isResponse (const APDU *) const
 {
   return false;
 }
 
-/* A_FileStream_InfoReport */
+/* A_FileStream_InfoReport_PDU */
 
 bool
-A_FileStream_InfoReport_PDU::init (const CArray & c, TracePtr)
+A_FileStream_InfoReport_PDU::init (const CArray & c, TracePtr tr)
 {
   if (c.size() < 3)
     return false;
@@ -3274,7 +3479,7 @@ A_FileStream_InfoReport_PDU::init (const CArray & c, TracePtr)
   file_handle = c[2] >> 4;
   file_block_sequence_number = c[2] & 0x0f;
   file_block.set (c.data() + 3, c.size() - 3);
-  return true;
+  return T_Data_Individual_PDU::init(c, tr);
 }
 
 CArray
@@ -3290,14 +3495,17 @@ A_FileStream_InfoReport_PDU::ToPacket () const
 }
 
 std::string
-A_FileStream_InfoReport_PDU::Decode (TracePtr) const
+A_FileStream_InfoReport_PDU::decode (TracePtr tr) const
 {
-  std::string s ("A_FileStream_InfoReport");
+  std::string s;
+  s = T_Data_Individual_PDU::decode(tr);
+  s += " A_FileStream_InfoReport";
   // @todo
   return s;
 }
 
-bool A_FileStream_InfoReport_PDU::isResponse (const APDU *) const
+bool
+A_FileStream_InfoReport_PDU::isResponse (const APDU *) const
 {
   // @todo
   return false;

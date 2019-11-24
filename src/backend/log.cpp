@@ -82,7 +82,7 @@ void
 LogFilter::recv_L_Data (LDataPtr l)
 {
   if (log_recv)
-    t->TracePrintf (0, "Recv %s", l->Decode (t));
+    t->TracePrintf (0, "Recv %s", l->decode (t));
   Filter::recv_L_Data(std::move(l));
 }
 
@@ -98,7 +98,7 @@ void
 LogFilter::send_L_Data (LDataPtr l)
 {
   if (log_send)
-    t->TracePrintf (0, "Send %s", l->Decode (t));
+    t->TracePrintf (0, "Send %s", l->decode (t));
   Filter::send_L_Data(std::move(l));
 }
 
@@ -106,7 +106,7 @@ void
 LogFilter::recv_L_Busmonitor (LBusmonPtr l)
 {
   if (log_monitor)
-    t->TracePrintf (0, "Monitor %s", l->Decode (t));
+    t->TracePrintf (0, "Monitor %s", l->decode (t));
   Filter::recv_L_Busmonitor(std::move(l));
 }
 
@@ -242,13 +242,13 @@ void LLlog::errored ()
 
 void LLlog::recv_L_Data(LDataPtr l)
 {
-  tr()->TracePrintf (0, "Recv %s", l->Decode (t));
+  tr()->TracePrintf (0, "Recv %s", l->decode (t));
   master->recv_L_Data(std::move(l));
 }
 
 void LLlog::send_L_Data(LDataPtr l)
 {
-  tr()->TracePrintf (0, "Send %s", l->Decode (t));
+  tr()->TracePrintf (0, "Send %s", l->decode (t));
   iface->send_L_Data(std::move(l));
 }
 
@@ -282,7 +282,7 @@ void LLlog::do_send_Local(CArray& l, int raw)
 
 void LLlog::recv_L_Busmonitor(LBusmonPtr l)
 {
-  tr()->TracePrintf (0, "Monitor %s", l->Decode (tr()));
+  tr()->TracePrintf (0, "Monitor %s", l->decode (tr()));
   master->recv_L_Busmonitor(std::move(l));
 }
 

@@ -1,2 +1,14 @@
+# Brace Style Options
 --style=gnu
+
+# Tab Options
 --indent=spaces=2
+
+# Brace Modify Options
+
+# Indentation Options
+
+# Padding Options
+--pad-header
+
+# Formatting Options

@@ -75,11 +75,11 @@ GroupCache::send_L_Data (LDataPtr lpdu)
   if (enable)
     {
       TPDUPtr tpdu = TPDU::fromPacket (lpdu->address_type, lpdu->destination_address, lpdu->lsdu, t);
-      if (tpdu->getType () == T_Data_Group)
+      if (tpdu->getTType () == T_Data_Group)
         {
           T_Data_Group_PDU *tpdu1 = (T_Data_Group_PDU *) &*tpdu;
-          if (tpdu1->tsdu.size() >= 2 && !(tpdu1->tsdu[0] & 0x3) &&
-              ((tpdu1->tsdu[1] & 0xC0) == 0x40 || (tpdu1->tsdu[1] & 0xC0) == 0x80)) // response or write
+          if (tpdu1->lsdu.size() >= 2 && !(tpdu1->lsdu[0] & 0x3) &&
+              ((tpdu1->lsdu[1] & 0xC0) == 0x40 || (tpdu1->lsdu[1] & 0xC0) == 0x80)) // response or write
             {
               CacheMap::iterator ci = cache.find (lpdu->destination_address);
               CacheMap::value_type *c;
@@ -99,7 +99,7 @@ GroupCache::send_L_Data (LDataPtr lpdu)
                   cache_seq.erase(c->second.seq);
                 }
               c->second.src = lpdu->source_address;
-              c->second.data = tpdu1->tsdu;
+              c->second.data = tpdu1->lsdu;
               c->second.recvtime = time (0);
               c->second.seq = seq++;
               cache_seq.emplace(c->second.seq,c->first);
@@ -189,7 +189,7 @@ GroupCache::remtrigger_cb(ev::async &, int)
   // erase() doesn't do reverse iterators
   //R_ITER(i,reader)
   unsigned int i = reader.size();
-  while(i--)
+  while (i--)
     {
       GroupCacheReader *r = reader[i];
       if (!r->stopped)
@@ -292,7 +292,7 @@ GroupCache::Read (eibaddr_t addr, unsigned Timeout, uint16_t age,
 
   new GCReader(this,addr,Timeout,age, cb,cc);
 
-  tpdu.tsdu = apdu.ToPacket ();
+  tpdu.lsdu = apdu.ToPacket ();
   lpdu = LDataPtr(new L_Data_PDU ());
   lpdu->lsdu = tpdu.ToPacket ();
   lpdu->source_address = 0;

@@ -150,7 +150,7 @@ EIBnetServer::setup()
 //                     const bool tunnel, const bool route,
 //                     const bool discover, const bool single_port)
 {
-  if(!Server::setup())
+  if (!Server::setup())
     return false;
   route = router_cfg->name.size() > 0;
   tunnel = tunnel_cfg->name.size() > 0;
@@ -332,9 +332,9 @@ rt:
       s->no = 1;
       s->type = type;
       s->nat = r1.nat;
-      if(!conn->setup())
+      if (!conn->setup())
         return -1;
-      if(!static_cast<Router &>(router).registerLink(conn, true))
+      if (!static_cast<Router &>(router).registerLink(conn, true))
         return -1;
       connections.push_back(s);
     }
@@ -875,7 +875,7 @@ EIBnetServer::stop_()
       if (c)
         {
           c->stop();
-          if(route)
+          if (route)
             static_cast<Router &>(router).unregisterLink(c);
         }
       mcast.reset();
